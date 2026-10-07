@@ -1,0 +1,1164 @@
+ARKHAM HORROR RPG CAMPAIGN COMPANION
+MASTER BRIEF & SYSTEM REQUIREMENTS
+Version: 1.0 | Date: 2026-10-07 | Language: Thai / English technical terms
+Document type: AI Development Handoff / Functional & Technical Requirements
+
+======================================================================
+00. วิธีใช้เอกสารนี้และคำสั่งสำหรับ AI ผู้พัฒนา
+======================================================================
+
+คุณคือ Software Architect และ Full-stack Developer ของโปรเจกต์นี้
+ให้ใช้เอกสารนี้เป็น Master Brief สำหรับออกแบบและพัฒนาแอปทีละขั้น
+ผู้ใช้จะทำงานผ่าน Codex ใน ChatGPT โดยเก็บ source code ใน GitHub repository
+และใช้ GitHub Codespaces เป็น Cloud Development Environment (CDE) หลัก
+ผู้ใช้ต้องการให้ Codex แก้ไฟล์ใน repository, อธิบายเป็นภาษาไทย,
+ทดสอบใน environment เท่าที่ทำได้ และแสดงผลเปลี่ยนแปลงให้ตรวจสอบได้
+
+สิ่งที่ต้องแนบให้ AI พร้อมเอกสารนี้:
+1. Arkham-Horror-RPG-Corebook.pdf ฉบับที่ผู้ใช้จัดเตรียม
+2. โค้ดปัจจุบันของโปรเจกต์ หากเริ่มพัฒนาแล้ว
+3. ผลการทดสอบหรือ error ล่าสุด หากเป็นการทำงานต่อ
+
+เอกสารนี้เรียบเรียงจาก Master Brief ที่ผู้ใช้ให้มา เป็นข้อกำหนดของผลิตภัณฑ์
+ไม่ใช่การรับรองว่าได้ตรวจสอบกฎเกมทุกข้อกับ PDF แล้ว
+ค่ากฎเกมที่ระบุในหมวด RULE-CANDIDATE เป็นข้อมูลตั้งต้นจาก Brief เดิม
+ต้องเปิด Corebook ตรวจสอบและบันทึกหน้าที่มา ก่อนนำไปเขียน game logic
+ไม่ให้นำ citation ของแชตเดิมที่เปิดไม่ได้ไปใช้เป็นหลักฐานในโค้ดหรือฐานข้อมูล
+
+ลำดับความสำคัญ:
+- MUST / ต้อง: ข้อกำหนดบังคับ
+- SHOULD / ควร: แนวทางที่คาดหวัง หากไม่ทำต้องอธิบายเหตุผล
+- MAY / optional: ทำเพิ่มได้เมื่อถึงระยะที่เหมาะสม
+- PROPOSED: ค่าเริ่มต้นทางเทคนิคที่เสนอ ปรับได้โดยแจ้งเหตุผล
+- NEEDS_VERIFICATION: ยังต้องตรวจสอบแหล่งข้อมูล ห้ามอ้างว่าเป็นกฎยืนยันแล้ว
+
+คำสั่งบังคับสำหรับ AI:
+DEV-01 ห้ามพยายามสร้างแอปทั้งหมดในคำตอบเดียว
+DEV-02 ทำเป็น STEP ที่เล็กพอให้ติดตั้งและทดสอบได้จริง
+DEV-03 ทุก STEP ต้องมี objective, scope, รายชื่อไฟล์ที่ Codex สร้าง/แก้,
+       setup ใน Codespaces, วิธีทดสอบ, expected results และ known issues
+DEV-04 หยุดรอผลตรวจสอบ STEP ปัจจุบันก่อนเริ่ม STEP ถัดไป
+DEV-05 ห้ามใช้ pseudocode, TODO หรือ mock authentication แทนฟังก์ชันที่ประกาศว่าเสร็จ
+DEV-06 ห้ามเดากฎเกมจากความจำ หากหา source ไม่พบ ให้หยุดเฉพาะส่วนที่พึ่งกฎนั้น
+       รายงานสิ่งที่ขาด และดำเนินส่วนที่ไม่ติดขัดได้
+DEV-07 ก่อนแก้โค้ดเดิม ให้ตรวจ Git status, branch และอ่านไฟล์ปัจจุบัน
+       รักษางานที่ยังไม่ commit ของผู้ใช้ ห้ามสร้างทับจากความจำ
+DEV-08 ห้ามเปลี่ยน stack, ลดขอบเขตสำคัญ หรือเพิ่มบริการเสียเงินโดยไม่แจ้งผู้ใช้
+DEV-09 ห้ามประกาศ production-ready หากยังไม่ผ่าน authentication, permission,
+       cross-campaign isolation และ data integrity acceptance tests
+DEV-10 ก่อนติดตั้ง integration ให้ตรวจเอกสารทางการเวอร์ชันปัจจุบันของ Google
+       Apps Script, Google Identity, Drive และ Gemini; อย่าเดา API หรือ quota
+DEV-11 ห้ามแสดง GitHub Personal Access Token, OAuth secret, Gemini key,
+       clasp credential หรือค่าจาก Codespaces/GitHub Secrets ใน chat, diff หรือ log
+DEV-12 อย่า push, merge, publish หรือ deploy ไป production โดยไม่มีคำสั่งชัดเจน
+       ให้เตรียม diff/ขั้นตอน review ที่ตรวจสอบได้ก่อน
+
+คำสั่งเริ่มงานที่แนะนำ:
+"อ่าน Brief นี้ทั้งหมดใน GitHub repository ของผมผ่าน Codex สรุป architecture,
+assumptions และความเสี่ยงที่มีผลต่อการทำงานจริง ตรวจ working tree ก่อนแก้ไข
+จากนั้นทำ STEP 1 เฉพาะ Foundation และ Authentication ใน branch ปัจจุบัน
+หรือ branch แยกตามแนวทาง repository พร้อมวิธีทดสอบใน GitHub Codespaces
+อย่าเริ่ม game mechanics จนกว่าจะตรวจ Corebook และอย่าเริ่ม STEP 2
+จนกว่าผมจะยืนยันผลทดสอบ STEP 1"
+
+======================================================================
+01. Product Vision และขอบเขต
+======================================================================
+
+สร้าง Private Campaign Platform สำหรับกลุ่มผู้เล่น Arkham Horror RPG
+รองรับ GM, Co-GM และ Player ตั้งแต่สร้าง Campaign, เชิญสมาชิก, สร้าง
+Investigator, เล่นหลาย Session, ติดตามตัวละคร, จัดการเรื่องราว, ค้นกฎ,
+แปลภาษา และบันทึก Campaign ต่อเนื่อง
+
+Core philosophy:
+- Campaign is the home.
+- Session is the chapter.
+- Investigator belongs to the Campaign.
+- Google Account identifies the player.
+- Corebook defines the rules.
+- Translation removes the language barrier.
+- AI assists; it does not invent the rules.
+
+GOAL-01 ข้อมูลตัวละคร, XP, Injuries, Trauma, Equipment และ Story ต่อเนื่อง
+        ข้าม Session และไม่ถูก reset เมื่อจบคืนที่เล่น
+GOAL-02 ผู้ใช้แต่ละคนใช้ Google Account จริง และมีหลาย Campaign/หลาย Role ได้
+GOAL-03 Player ใช้งานมือถือได้คล่อง; GM เหมาะกับ Tablet/Desktop และใช้มือถือได้
+GOAL-04 English/Thai อยู่บน game state เดียวกัน เปลี่ยนภาษาไม่เปลี่ยนตัวเกม
+GOAL-05 กฎและ AI answer ตรวจสอบย้อนกลับถึง Corebook ได้
+
+ขอบเขตนี้ไม่ใช่ Arkham Horror: The Card Game companion และห้ามนำกลไกของ
+LCG, board game หรือระบบ Call of Cthulhu มาปะปนกับ Arkham Horror RPG
+
+นอกขอบเขตเวอร์ชันแรก:
+- Public content marketplace หรือ public rulebook library
+- การแจก PDF/artwork/book content สู่สาธารณะ
+- ระบบชำระเงิน, voice/video chat, virtual tabletop เต็มรูปแบบ
+- Offline multiplayer หรือการรับประกัน real-time latency ระดับเกมแอ็กชัน
+- ย้ายฐานข้อมูลไปบริการอื่นโดยอัตโนมัติ
+
+======================================================================
+02. Technology และ Architecture
+======================================================================
+
+Frontend: HTML, CSS, Vanilla JavaScript
+Backend: Google Apps Script
+Database: Google Sheets
+File storage: Google Drive
+AI: Gemini API
+Identity: Google Account / Google Identity พร้อม backend verification
+
+ARCH-01 แยก Presentation, API/RPC, Authentication, Authorization, Domain
+        Services, Repository, Rules Engine และ AI/Retrieval ออกจากกัน
+ARCH-02 Spreadsheet เป็น persistent data store; CacheService ใช้เพิ่มความเร็ว
+        ห้ามเป็นแหล่งจริงเพียงแห่งเดียวของ character/session state
+ARCH-03 Script Properties ใช้เก็บ secrets และ configuration ที่เป็นของ server
+ARCH-04 ทุก campaign object มี stable ID และ CampaignID
+ARCH-05 Game calculations ทำบน server; browser ส่งคำขอและแสดงผล
+ARCH-06 Corebook import/translation ทำเป็นงานล่วงหน้าหรืองานแบ่ง batch
+        ห้าม parse PDF ทั้งเล่มทุกครั้งที่ผู้ใช้ค้นหรือถาม AI
+
+======================================================================
+02A. เครื่องมือพัฒนา: ChatGPT Codex + GitHub Codespaces
+======================================================================
+
+DEVENV-01 GitHub repository เป็น source of truth สำหรับ source code,
+         documentation, schema, tests และ migration scripts
+DEVENV-02 ใช้ ChatGPT Codex เป็น coding agent สำหรับอ่าน/แก้/ตรวจ repository
+         โดยทำงานตาม instructions ที่เก็บใน repository เช่น AGENTS.md
+DEVENV-03 ใช้ GitHub Codespaces เป็น Cloud Development Environment หลัก
+         สำหรับติดตั้ง dependencies, run tests และ preview/dev server
+DEVENV-04 Codespaces เป็น environment สำหรับพัฒนาและทดสอบ; ไม่ใช่ที่ host
+         Google Apps Script runtime และไม่แทน Google Sheets/Drive
+DEVENV-05 Production backend ยังคงเป็น Google Apps Script ตาม stack หลัก
+         การ publish web app ทำผ่าน Apps Script deployment ที่กำหนดไว้
+DEVENV-06 GitHub Actions อาจใช้ตรวจ format/lint/unit tests ได้เมื่อจำเป็น
+         แต่ห้ามออกแบบ workflow ให้ deploy production อัตโนมัติโดยปริยาย
+DEVENV-07 Repository แนะนำให้เป็น Private เพราะมี source, schema และ
+         integration configuration ของแอป; ห้ามใส่ Corebook PDF หรือ
+         extracted full-book text ใน repository
+DEVENV-08 Commit เฉพาะ source/config ที่ไม่เป็นความลับ; ใช้ `.gitignore`
+         สำหรับ `.env`, clasp credentials, local tokens, generated exports,
+         uploaded scans และ temporary/cache files
+DEVENV-09 Secrets ใช้ GitHub Codespaces Secrets สำหรับ development ที่จำเป็น
+         และ Google Apps Script Script Properties สำหรับ runtime secrets
+         เช่น GEMINI_API_KEY; secrets คนละ environment ต้องไม่แชร์ผิดที่
+DEVENV-10 ห้าม echo/print secrets ใน workflow, terminal output, tests,
+         screenshots, error trace หรือ Codex response
+DEVENV-11 กำหนด Node.js/tool versions และ dependencies ให้ reproducible
+         เช่น lockfile, `.devcontainer/devcontainer.json`, README setup
+         และคำสั่ง test ที่รันได้จาก clean Codespace
+DEVENV-12 ก่อนแก้ไฟล์ Codex ตรวจ branch/status/diff; ทำการเปลี่ยนแปลงเป็น
+        ชุดเล็ก ตรวจ diff และทดสอบเฉพาะที่เกี่ยวข้องก่อนรายงาน
+DEVENV-13 หาก repository มี AGENTS.md หรือ project instructions ให้ทำตาม
+         และห้ามเขียนทับโดยไม่จำเป็น
+DEVENV-14 ห้าม Codex commit/push/merge/deploy โดยอัตโนมัติ เว้นแต่ผู้ใช้
+         สั่งชัดเจน; หากผู้ใช้ขอให้ทำ ให้รายงาน branch/commit/deployment ที่ทำจริง
+DEVENV-15 อย่าใส่ service account key หรือ Google user credential ลง GitHub
+         ให้เลือก authentication สำหรับ local/Codespaces และ clasp ตามเอกสาร
+         ทางการปัจจุบัน พร้อมอธิบายการ revoke credential
+
+Repository layout (แนวทาง ไม่ใช่ข้อบังคับให้แตกไฟล์ครบตั้งแต่ STEP 1):
+  /src หรือโครงสร้างที่เข้ากับ Apps Script
+  /test หรือ /tests
+  /docs
+  /scripts
+  /.devcontainer/devcontainer.json
+  /.github/workflows/ci.yml (ถ้าใช้ CI)
+  .clasp.json (ห้ามเก็บ credential; คุม access ตามแนวทาง project)
+  .claspignore
+  .gitignore
+  appsscript.json
+  README.md
+
+Codex workflow ต่อหนึ่ง STEP:
+1. ตรวจ project instructions, branch, working tree และไฟล์ที่เกี่ยวข้อง
+2. สรุปสิ่งที่จะเปลี่ยนและ assumptions ก่อนแก้ หากเป็นงานขนาดใหญ่
+3. แก้ไฟล์จริงใน repository ด้วย patch ที่เล็กและ review ได้
+4. รัน formatter/linter/tests ที่มี; ถ้ารันไม่ได้ บอกเหตุผลและคำสั่งให้ผู้ใช้
+5. ตรวจ diff ว่าไม่มี secret, PDF, generated dump หรือ unrelated changes
+6. แจ้งไฟล์ที่เปลี่ยน, วิธีทดสอบ, ผลจริง, limitation และขั้นตอนให้ผู้ใช้ทดสอบ
+7. หยุดที่ gate ของ STEP นั้น ห้ามเริ่ม STEP ถัดไปเอง
+
+ข้อจำกัดการทดสอบ:
+การทดสอบใน Codespaces ไม่รับรอง deployment, Google OAuth consent,
+Apps Script scopes, Sheets/Drive permissions, quota หรือ Gemini access จริง
+ต้องมี deployment smoke test แยกใน Google Apps Script ด้วยบัญชีทดสอบ
+ก่อนให้ผู้เล่นใช้ และห้ามส่ง production credentials เข้า CI
+
+ความเป็นเจ้าของข้อมูลที่ต้องอธิบายก่อนติดตั้ง:
+Google Account ระบุตัวผู้ใช้ ไม่ได้หมายความว่าแต่ละ Player ต้องมีสำเนา Sheet
+หรือสิทธิ์เปิด raw database ใน Drive ของตนเอง
+PROPOSED: ใช้ฐานข้อมูลและ Drive folder กลางภายใต้บัญชีผู้ติดตั้ง/เจ้าของระบบ
+สมาชิกเข้าถึงผ่านแอปที่ตรวจสิทธิ์ ไม่แชร์ Sheet ที่มีข้อมูลทุก Campaign
+หากต้องการให้แต่ละ GM เป็นเจ้าของ storage แยกบัญชี ต้องออกแบบเพิ่มเติม
+และตกลง architecture ก่อนเริ่มพัฒนา ไม่ให้ AI สมมติว่าเป็นสิ่งเดียวกัน
+
+ก่อนเลือกวิธี Sign-In ให้พิสูจน์กับ URL deployment จริง:
+- รูปแบบ deployment และบัญชีที่รัน Apps Script
+- Google Cloud/OAuth configuration, authorized origins/redirects ที่จำเป็น
+- ข้อจำกัดของ HTML Service/iframe/cookie/redirect ใน flow ที่เลือก
+- ผู้ใช้ Google ส่วนตัวต่างบัญชีเข้าใช้งานและระบุตัวได้อย่างถูกต้อง
+หากทำไม่ได้ใน stack นี้ ให้รายงานหลักฐานและเสนอทางเลือกก่อนเปลี่ยน stack
+
+======================================================================
+03. Domain Model และความสัมพันธ์
+======================================================================
+
+Google Account -> User -> CampaignMembership -> Campaign
+Campaign -> Members, Investigators, Sessions, Story, Investigation, Journal
+Session -> Attendance, Events, Rolls, Snapshot
+Investigator -> Skills, Knacks, Items, Effects, Resources, Advancement History
+
+MODEL-01 Character.CampaignID เป็นเจ้าของระยะยาว; ห้ามใช้ SessionID เป็น owner
+MODEL-02 SessionPlayers เชื่อม Session/User/Character สำหรับการเข้าร่วมแต่ละครั้ง
+MODEL-03 Member คนเดียวมี Role ต่างกันในแต่ละ Campaign ได้
+MODEL-04 ห้าม join ด้วยชื่อ, translation หรือ email เมื่อมี stable ID
+MODEL-05 ทุก foreign key ต้องตรวจว่าปลายทางอยู่ Campaign เดียวกัน
+MODEL-06 ประวัติ Session ที่จบแล้วต้องอ่านจาก snapshot/event history
+         ไม่ใช่อ่านเฉพาะค่าตัวละครล่าสุดที่อาจเปลี่ยนภายหลัง
+
+======================================================================
+04. Authentication และ User Profile
+======================================================================
+
+AUTH-01 Login ด้วย Google Account ก่อนเข้าถึงข้อมูลแอป
+AUTH-02 ห้ามใช้ Player Name + Room Code เป็น identity หลัก
+AUTH-03 ห้ามพึ่ง Session.getActiveUser().getEmail() เพียงอย่างเดียว
+AUTH-04 Internal UserID อิง immutable Google subject identifier ที่ตรวจสอบแล้ว
+        ห้ามเชื่อ UserID/email/role ที่ client ส่งมาโดยไม่มี verification
+AUTH-05 การ decode JWT เฉย ๆ ไม่เท่ากับตรวจสอบ token
+        วิธีที่ใช้ต้องยืนยันความถูกต้องของ token รวมถึง signature/issuer/
+        audience/expiry ตาม Google documentation และ threat model ของ flow
+AUTH-06 ใช้ verified email สำหรับ email-bound invitation
+AUTH-07 ออกแบบ login expiry, logout, reauthentication และ error state ชัดเจน
+AUTH-08 ไม่บันทึก raw credential/token ลง log, URLs หรือ Sheet ที่ผู้เล่นเข้าถึง
+AUTH-09 หากมี app session ต้องมี expiry/revocation และ server-side validation
+AUTH-10 Authentication แยกจาก Campaign Membership เสมอ
+
+User fields:
+UserID, GoogleSubjectID, Email, EmailVerified, DisplayName,
+PreferredLanguage, CreatedAt, LastLoginAt
+อาจใช้ GoogleSubjectID เป็น UserID โดยตรง หรือ mapping แบบ unique ที่คงที่
+
+AC-AUTH:
+- บัญชี A/B ต้องได้คนละ UserID และกลับเข้าใช้อีกครั้งได้ ID เดิม
+- token ปลอม/หมดอายุ/ผิด audience ถูกปฏิเสธ
+- ส่ง UserID ของคนอื่นจาก client ไม่ทำให้สวมสิทธิ์ได้
+- เมื่อหมดอายุ ระบบให้ login ใหม่โดยไม่แอบทำ mutation ต่อ
+
+======================================================================
+05. Authorization, Roles และ Visibility
+======================================================================
+
+Role ภายใน Campaign: GM, CO_GM, PLAYER
+ผู้สร้าง Campaign เป็น GM และ Campaign Owner อัตโนมัติ
+Campaign Owner เป็นสิทธิ์กำกับดูแลเพิ่มเติมจาก Role
+
+PERM-01 ทุก server operation ที่อ่าน/เขียน campaign data ต้องทำ:
+        Authenticate -> Membership -> Role -> Object/Field Permission -> Execute
+PERM-02 Default deny: object ใหม่ที่ยังไม่กำหนดสิทธิ์ต้องไม่เผยให้ Player
+PERM-03 ตรวจสิทธิ์จากข้อมูลปัจจุบันบน server ทุก request
+PERM-04 Player API ห้ามส่ง GM secrets ลง browser แม้ UI จะซ่อนได้
+PERM-05 URL, file ID, record ID, search results, translations, exports และ AI
+        ต้องอยู่ภายใต้สิทธิ์เดียวกับข้อมูลต้นทาง
+PERM-06 การย้าย object ไปอีก Campaign ผ่านการแก้ CampaignID ต้องถูกปฏิเสธ
+PERM-07 Player แก้ได้เฉพาะ Investigator ของตนและ field/action ที่อนุญาต
+        ห้ามแก้ XP, approval, official costs/limits ตามใจผ่าน API
+PERM-08 การถอดสมาชิกหรือเปลี่ยนสิทธิ์ต้องทำให้ request ถัดไปใช้สิทธิ์ใหม่
+        และ invalidate permission-sensitive cache
+
+Role capabilities:
+GM: จัดการ Campaign, Members, Sessions, Characters, Story และ GM data
+Co-GM: ช่วยจัดการ Sessions/Story/Characters และอ่าน GM data ตาม visibility
+Player: อ่าน player-safe data, จัดการ character ของตนตาม workflow, เล่น/ทอย
+Owner only (PROPOSED): transfer ownership, archive/delete Campaign,
+                       แต่งตั้ง/ถอด GM หรือ Co-GM และ ownership settings
+ห้าม Co-GM ยกระดับสิทธิ์ตนเอง; ปรับขอบเขตได้หากเจ้าของระบบสั่งชัดเจน
+
+Visibility enum และความหมายเริ่มต้น:
+GM_ONLY: GM เท่านั้น
+CO_GM: GM และ Co-GM
+CAMPAIGN_PLAYERS: ACTIVE members ทุก Role ใน Campaign
+SELECTED_PLAYERS: ผู้เล่นที่เลือกด้วย UserID พร้อม GM/Co-GM ที่มีสิทธิ์จัดการ
+PUBLIC: สงวนสำหรับข้อมูลที่ตั้งใจเผยแพร่; ปิด public access ในรุ่นแรก
+        ค่า PUBLIC ไม่ใช่ทางลัดข้าม authentication และไม่ใช้กับ Corebook
+UI ควรใช้ชื่อ "GM + Co-GM" สำหรับ CO_GM เพื่อไม่ให้เข้าใจว่าตัด GM ออก
+
+Field-level example:
+NPC.PublicName = Professor Morgan
+NPC.PlayerInformation = He seems nervous.
+NPC.GMSecret = He belongs to the cult.
+Player response ต้องไม่มี key/value GMSecret รวมถึงใน nested JSON และ AI context
+
+Private notes ของ Player เป็น owner-only โดยค่าเริ่มต้น; ผู้ใช้เลือก share ได้
+GM private notes กำหนด GM_ONLY หรือ CO_GM ให้ชัดเจน
+
+======================================================================
+06. My Campaigns, Campaign Creation และ Membership
+======================================================================
+
+CAMP-01 หลัง login แสดง My Campaigns ตาม ACTIVE memberships เท่านั้น
+CAMP-02 Card แสดงชื่อ, role, investigator ของผู้ใช้, players/sessions,
+        last played และ Continue
+CAMP-03 สร้าง Campaign ด้วย Name, Description, Language, Image, Setting, Notes
+CAMP-04 Optional: StartingLocation, Tone, StartingXPRule, AllowedSources
+CAMP-05 CampaignLanguage เป็น default content language ไม่ทับ user preference
+CAMP-06 StartingXPRule ที่ต่างจาก official ต้องติดป้าย HOUSE RULE และ version
+CAMP-07 ผู้ใช้เป็น GM ใน Campaign A, Player ใน B และ Co-GM ใน C ได้
+
+CampaignMember fields:
+CampaignMemberID, CampaignID, UserID, Role, Status, JoinedAt, InvitedBy
+Member Status: INVITED, ACTIVE, LEFT, REMOVED
+กรณีผู้รับยังไม่เคย login ให้ใช้ CampaignInvites เก็บ pending invitation
+ห้ามสร้าง UserID ปลอมจาก email เพื่อแทน Google identity
+
+INV-01 GM เชิญผ่าน Google Account email; ค่าเริ่มต้น role เป็น PLAYER
+INV-02 ผู้รับ login แล้วเห็น Campaign, GM, role ที่เชิญ, Join และ Decline
+INV-03 Join ต้องยืนยันว่า verified email ของคน login ตรงกับ invitation
+INV-04 ผูกสมาชิกกับ immutable UserID หลังยอมรับ invitation สำเร็จ
+INV-05 Invitation มี expiry, revoke, duplicate prevention และสถานะ
+       PENDING / ACCEPTED / DECLINED / EXPIRED / REVOKED
+INV-06 ตอบรับซ้ำต้องไม่สร้างสมาชิกหลายแถว และเพิ่ม role เองไม่ได้
+INV-07 การส่ง email notification เป็นช่องทางเสริมที่เปิดตั้งค่าได้
+       อย่างน้อยต้องมี in-app invitation; อธิบายให้ชัดว่ามีส่ง email จริงหรือไม่
+
+AC-CAMP:
+- A สร้าง Campaign แล้วเป็น Owner/GM
+- B เห็น invitation และ Join สำเร็จ; C ยอมรับ invitation ของ B ไม่ได้
+- สมาชิกที่ถูก REMOVED เข้าถึง campaign payload/ไฟล์/AI history ไม่ได้
+- Role ของ Campaign A ไม่ส่งผลต่อ Campaign B
+
+======================================================================
+07. Sessions, Attendance และ Live Play
+======================================================================
+
+SES-01 Campaign มีหลาย Session ได้ โดยไม่ตั้งเพดานจำนวนใน business rules
+       ต้อง paginate/archive ตามขนาดข้อมูลและข้อจำกัด platform จริง
+SES-02 Session fields: SessionID, CampaignID, Name, Number, Date,
+       Description, Status, CurrentSceneID, StartedAt, EndedAt
+SES-03 Status: PREPARING, ACTIVE, PAUSED, COMPLETED
+SES-04 PROPOSED: มี ACTIVE หรือ PAUSED session ได้ครั้งละหนึ่งต่อ Campaign
+       ต้องมี server guard ป้องกันการเริ่มสอง session พร้อมกัน
+SES-05 SessionPlayers แยก attendance ของแต่ละครั้งจาก membership ระยะยาว
+SES-06 SessionPlayers fields: SessionPlayerID, CampaignID, SessionID, UserID,
+       CharacterID, Attendance, JoinedAt, LeftAt
+SES-07 Attendance enum ต้องกำหนดชัด เช่น INVITED, PRESENT, ABSENT, LEFT
+       และตรวจว่า Character เป็นของ User/Campaign นั้นและพร้อมเล่น
+SES-08 Start/Pause/Resume/End จำกัด GM/Co-GM ตามสิทธิ์
+SES-09 COMPLETED เป็น read-only history; การแก้ประวัติต้องเป็น amendment
+       ที่มีผู้แก้ เวลา และเหตุผล ไม่แก้ snapshot เดิมเงียบ ๆ
+
+Active Play ต้องติดตาม:
+Current Scene, Active Players, Character State, Dice Pool, Horror, Insight,
+Injuries, Trauma, Effects, Clues, Handouts, Recent Rolls,
+NPC Interactions และ Session Notes
+
+End Session:
+- สร้าง immutable snapshot พร้อม timestamp และ schema/rules version
+- บันทึก summary, attendance, scenes played, major events, clues discovered,
+  NPCs encountered, items acquired, injuries, traumas, XP awarded,
+  advancements และ GM notes ที่แยกสิทธิ์
+- รักษา persistent character state สำหรับ session ถัดไป
+- ไม่ refresh resource หรือรักษา injury อัตโนมัติ เว้นแต่มีกฎที่ตรวจสอบแล้ว
+- การกด End ซ้ำ/เครือข่าย retry ต้องไม่แจก XP หรือสร้าง snapshot ซ้ำ
+- หากทำงานหลาย write ไม่ครบ ต้อง recover ได้ และไม่ประกาศ COMPLETED
+  พร้อม snapshot ที่ขาดโดยไม่มีสถานะผิดพลาด
+
+Timeline แสดง Session 01, 02, 03... พร้อมเปิดดู summary/events/clues/NPCs/
+XP/character changes/notes ตามสิทธิ์ของผู้ดู
+
+Live synchronization:
+ใช้ polling/version-based refresh ที่ปรับช่วงเวลาได้ ลด polling เมื่อ tab hidden
+แสดง syncing, last updated, stale/offline, retry และ conflict state
+ห้ามอ้างว่า Apps Script มี WebSocket/push real-time ในตัวโดยไม่ได้พิสูจน์
+
+======================================================================
+08. Corebook Import และ Source of Truth
+======================================================================
+
+Source file: Arkham-Horror-RPG-Corebook.pdf ที่ผู้ใช้แนบ
+Primary Source of Truth: Core Rulebook ฉบับนี้
+
+BOOK-01 ลงทะเบียน BookID, Title, Edition/Version ถ้าทราบ, checksum,
+        DriveFileID, ImportedAt, ImportStatus และ source metadata
+BOOK-02 แยก PrintedPage กับ PDFPageIndex ให้ชัดเจน รวมหน้าคำนำที่ทำให้เลขต่างกัน
+BOOK-03 Extract เป็น structured entities และ searchable chunks
+BOOK-04 เก็บ original English, section, page, keywords, visibility,
+        extraction status และ verification status
+BOOK-05 ใช้ checkpoint/resume สำหรับ batch import และ OCR ที่จำเป็น
+BOOK-06 ตรวจตาราง/ข้อยกเว้น/เชิงอรรถด้วย source จริง ไม่เชื่อ OCR ทุกบรรทัด
+BOOK-07 Rule ที่ใช้คำนวณต้องมี VERIFIED status และระบุ implementation mapping
+BOOK-08 Source ไม่ครบหรือขัดแย้งให้ขึ้น NEEDS_REVIEW ไม่ fabricate ค่า default
+
+EntityType:
+RULE, SKILL, PERSONALITY_TRAIT, ARCHETYPE, KNACK, WEAPON, EQUIPMENT,
+INJURY, TRAUMA, NPC, CREATURE, ANCIENT_ONE, LOCATION
+
+GameEntity minimum fields:
+EntityID, EntityType, CanonicalName, EnglishName, EnglishDescription,
+BookID, PrintedPage, PDFPageIndex, Section, Keywords, OriginalSource,
+Visibility, SourceVersion, VerificationStatus, UpdatedAt
+
+Translations ใช้ EntityID + LanguageCode + SourceVersion เป็น key
+English เป็น canonical; ThaiName/ThaiDescription เป็น translation layer
+อาจแสดง Thai fields ใน API projection ได้ แต่ไม่สร้าง authoritative copy ซ้ำ
+ห้ามใช้ชื่อแปลเป็น identifier
+
+Source priority สำหรับค้นและอธิบาย:
+1. Core Rulebook
+2. Campaign Material
+3. Scanned Material
+4. GM Custom Rules
+5. General AI Knowledge
+
+Source priority ไม่ใช่การยอมให้ข้อความทุกชนิดเปลี่ยน game engine:
+- Official rule ต้องมี Corebook source
+- GM custom rule ใช้เมื่อ GM เปิดใช้ชัดเจนใน CampaignSettings และติดป้าย HOUSE RULE
+- การ override official ต้องแสดงความแตกต่างและบันทึก rule version
+- Scanned material ต้องระบุที่มา/ฉบับ/ความน่าเชื่อถือก่อนจัดว่า official
+- General AI knowledge ใช้ได้เฉพาะ suggestion ที่ไม่อ้างเป็นกฎยืนยัน
+
+Rule verification register:
+RuleID, Topic, SourceQuoteOrExcerpt, PrintedPage, PDFPageIndex,
+Interpretation, Exceptions, VerificationStatus, VerifiedBy, VerifiedAt,
+ImplementationModule, TestCases, RuleVersion
+
+======================================================================
+09. Languages และ Translation
+======================================================================
+
+LANG-01 รุ่นแรก English (en) และ Thai (th); รองรับเพิ่มภาษาโดยไม่แก้ game IDs
+LANG-02 PreferredLanguage เป็น user-specific ภายใน Campaign เดียวกันได้
+LANG-03 UI text ใช้ pretranslated dictionary และ stable message keys
+        ห้ามเรียก Gemini ทุกครั้งที่ render ปุ่มหรือเมนู
+LANG-04 Game content ใช้ canonical English + translation database/cache
+LANG-05 เก็บ glossary เพื่อให้ skill/knack/rule terms แปลสม่ำเสมอ
+LANG-06 Dynamic translation ใช้กับ scans, new material, handouts,
+        adventure text และ GM narration
+LANG-07 เก็บ SourceVersion, TranslationStatus, Model/PromptVersion,
+        ReviewedBy, UpdatedAt เพื่อ invalidate translation เมื่อ source เปลี่ยน
+LANG-08 Translation fallback เป็น English พร้อมป้ายว่ายังไม่มีคำแปล
+LANG-09 ต้องรักษาตัวเลข, skill threshold, costs, conditions และข้อยกเว้น
+LANG-10 การเปลี่ยนภาษาไม่เปลี่ยน StateVersion, CharacterID, XP หรือผลทอย
+LANG-11 Translation cache/history ต้องรักษา visibility ของ source
+
+======================================================================
+10. Investigator Creation และ Approval
+======================================================================
+
+CHAR-01 Player ต้องเป็น ACTIVE campaign member ก่อนสร้าง investigator
+CHAR-02 Character มี CharacterID, CampaignID, OwnerUserID ตั้งแต่สร้าง draft
+CHAR-03 Flow: Join Campaign -> Create -> Wizard -> Review -> Submit
+        -> GM Approval -> Ready
+CHAR-04 Wizard มี 6 หน้าจอ โดยอิง 5 ขั้นของ Corebook + Review
+CHAR-05 Save draft/resume ได้ และ validate ซ้ำบน server ตอน Submit/Approve
+CHAR-06 ห้ามให้ Player เปลี่ยน owner/campaign/approval ด้วย client payload
+CHAR-07 หลัง APPROVED การแก้ mechanics ใช้ play/advancement/correction action
+        ไม่ย้อนกลับไปใช้ creation budget หรือ reset XP เพื่อได้ของเพิ่ม
+
+Step 1 Background:
+Name, Place of Origin, Local/Visitor, Family, Friends, Employment,
+Lifestyle, First Supernatural Encounter, Notable Enemies และ narrative
+มี Write Myself / Help Me Create
+AI ช่วยเขียน narrative ได้ แต่ห้ามสร้าง stat/bonus ที่ไม่มี source
+
+Step 2 Personality:
+เลือกจาก verified Corebook database
+แสดง Name, Description, PositiveEffect, NegativeEffect, SourcePage,
+View Original และคำแปลตาม user language
+เก็บความเกี่ยวข้องกับ Insight/Trauma/Roleplaying ตาม source จริง
+
+Step 3 Archetype:
+เลือกจาก verified Corebook database
+แสดง Description, SkillLimits, Tier 1–4 Knacks, SourcePage
+Help Me Choose ถามความชอบ Combat/Investigation/Magic/Social/Exploration/
+Protection/Survival/Knowledge แล้วให้ AI recommendation
+คำแนะนำต้องไม่ถูกแสดงเป็น official requirement
+
+Step 4 Skills:
+โหลดรายชื่อและข้อจำกัดจาก Corebook; แสดง threshold เช่น 6+, 5+, 4+, 3+, 2+
+สร้าง validation ตามกฎที่ตรวจแล้ว รวมการเลือกซ้ำและ advancement limits
+
+Step 5 Equipment & Advancement:
+เลือก starting knack, package, ซื้อ equipment และใช้ starting XP หากเลือก
+ตรวจงบ, prerequisites, tier, allowed sources และ GM permission
+แสดง remaining money, insight limit และ unused XP
+
+Step 6 Review:
+Name, Background, Personality, Archetype, Skills, StartingKnack,
+Equipment, MoneyRemaining, InsightLimit, UnusedXP และ validation errors
+แยก "build invalid" ออกจาก "requires GM approval"
+
+Character status:
+DRAFT -> SUBMITTED -> APPROVED
+SUBMITTED -> REJECTED (Request Changes พร้อมเหตุผล) -> DRAFT -> SUBMITTED
+APPROVED -> RETIRED ตามสิทธิ์ที่กำหนด
+การ retire ไม่ลบ session history
+
+Approval บันทึก SubmittedAt, ApprovedBy, ApprovedAt, ReviewNotes,
+approved build version และ permission exceptions ที่อนุญาตเฉพาะรายการ
+
+RULE-CANDIDATE: ต้องตรวจ Chapter 3/ส่วนที่เกี่ยวข้องก่อน implement
+RC-01 Background ไม่มี mechanical bonus โดยตรง
+RC-02 ทุก Skill เริ่ม 6+; เลือก 3 skills เป็น 5+ และอีก 1 skill เป็น 4+
+      โดยไม่เสีย XP ในขั้นสร้างตัวละคร; ตรวจเงื่อนไข distinct skills จากหนังสือ
+RC-03 เริ่มด้วย 1 Tier 1 Knack, $50 Gear และ Insight Limit 1
+RC-04 เลือก 1 อย่าง: เพิ่ม $100 Gear / เพิ่ม 5 XP / Insight Limit เป็น 2
+RC-05 Relics และ Tomes ใน starting purchase ต้องได้ GM permission
+RC-06 Archetype กำหนด skill advancement limits และ knacks ตาม tier
+RC-07 Natural 1/Natural 6 มีข้อกำหนดเฉพาะ ต้องตรวจข้อความจริง
+RC-08 XP costs/prerequisites ของ skill, knack tier และ insight ต้อง extract จริง
+ค่าเหล่านี้ห้ามตั้งสถานะ VERIFIED เพียงเพราะปรากฏใน Brief นี้
+
+======================================================================
+11. Equipment และ Character Advancement
+======================================================================
+
+EQ-01 Browser แบ่ง Weapons, Protective Equipment, Useful Items, Relics, Tomes
+EQ-02 Search/filter, View Rule, Add/Remove, Quantity, Budget/Spent/Remaining
+EQ-03 ราคากับสถิติอิง verified canonical entity; ไม่รับราคาจาก browser เป็นจริง
+EQ-04 GM approval ของ relic/tome ต้องเป็น explicit record
+EQ-05 Items ระหว่างเล่นมี acquisition/transfer/use history ตามขอบเขตที่ทำ
+EQ-06 Mundane/Supernatural resources ต้องแยกประเภทและรักษาค่าข้าม sessions
+
+ADV-01 Advance Investigator รองรับ Improve Skill, Purchase Knack,
+       Increase Insight ตาม Corebook
+ADV-02 Server ตรวจ available XP, cost, tier, prerequisites และ archetype limits
+ADV-03 XP awards ใช้ GM-authorized action; Player แก้ยอดเองไม่ได้
+ADV-04 เก็บ ledger ของ XP earned/spent, old/new state, reason, source,
+       session reference, actor, timestamp, request ID
+ADV-05 ป้องกันกดซื้อซ้ำ/retry แล้วหัก XP สองครั้ง
+ADV-06 การแก้ผิดใช้ reversal/correction event ที่ตรวจสอบได้
+
+======================================================================
+12. Digital Investigator Sheet และ Live State
+======================================================================
+
+Sheet sections:
+Identity, Personality, Skills, Dice Pool, Horror, Insight, Injuries,
+Trauma, Knacks, Weapons, Equipment, Mundane Resources,
+Supernatural Resources, Background, XP
+
+Live state fields ที่ต้องตรวจ semantic กับ Corebook:
+DicePoolMaximum, DicePoolLimit, DicePoolCurrent,
+HorrorDiceCurrent, HorrorDiceLimit, InsightCurrent, InsightLimit,
+CurrentDamage, Injuries, Trauma, Effects, StateVersion
+
+STATE-01 กำหนดความต่างของ Maximum/Limit/Current ให้ตรง source
+STATE-02 Derived values ต้องคำนวณจาก authoritative fields ไม่เปิดแก้อิสระทุกค่า
+STATE-03 ถ้า damage/dice pool สื่อกลไกเดียวกันบางส่วน ต้องกำหนด source field
+         และสูตรเพื่อป้องกันค่าขัดกัน ห้ามสร้าง independent HP system เอง
+STATE-04 ใช้ server-side actions เช่น spend/recover/apply/remove ตามกฎ
+STATE-05 GM manual adjustment ต้องมี reason/audit และตรวจขอบเขตที่อนุญาต
+STATE-06 injury/trauma/effect มี source, start/end/expiry หากกฎมี,
+         mechanical modifiers และ visibility ที่เหมาะสม
+STATE-07 Player ใช้ quick controls บนมือถือได้และเห็นผลหลัง server ยืนยัน
+
+======================================================================
+13. Dice Roller และ Roll History
+======================================================================
+
+DICE-01 อิง Dynamic Pool System จาก Corebook เท่านั้น
+DICE-02 UX: Choose Skill -> Choose Dice -> Roll
+DICE-03 Pool เชื่อมกับ live character state และสถานะบาดเจ็บตามกฎจริง
+DICE-04 คำนวณ normal/horror dice, successes, natural results, costs,
+        spending/recovery และ special effects จาก verified rule modules
+DICE-05 Server สร้างผลและตรวจ pool ก่อน commit ไม่รับผลทอยที่ client อ้าง
+DICE-06 ผลและการเปลี่ยน pool ต้อง commit แบบป้องกัน partial/duplicate operation
+DICE-07 ส่ง request ID เดิมต้องได้ผลเดิม ไม่สุ่มใหม่จาก retry
+DICE-08 บันทึก roll inputs, skill threshold, dice faces, normal/horror labels,
+        successes, special results, state before/after, actor, timestamp,
+        CampaignID, SessionID, CharacterID, rules version และ visibility
+DICE-09 แสดงผล Dice Results, Successes, Normal Dice, Horror Dice,
+        Special Result และ Pool Remaining
+DICE-10 ไม่กำหนด default dice pool จากตัวอย่างหน้าจอว่าเป็น official rule
+
+ต้องตรวจ source ก่อนกำหนด behavior:
+การเลือกจำนวนเต๋า, skill checks, natural 1/6, horror dice acquisition/roll/
+resolution, pool depletion/recovery, damage/injury interaction, rerolls,
+modifiers และการใช้ Insight ที่สัมพันธ์กับการทอย
+
+======================================================================
+14. Rulebook Search และ AI Assistant
+======================================================================
+
+RULE-01 Member ทุกคนมี Rulebook view ตาม role/content visibility
+RULE-02 Player: Rules, Skills, Actions, Character Creation, Equipment,
+        Player References
+RULE-03 GM/Co-GM: เพิ่ม GM rules, NPCs, Creatures, Ancient Ones,
+        GM References ตาม permission
+RULE-04 Search ไทย/อังกฤษผ่าน bilingual index, keywords และ glossary
+        ตัวอย่าง "บาดเจ็บ" เชื่อม Damage/Injury/Wounded ตามข้อมูลใน index
+RULE-05 Search result มี source title, printed page, PDF page mapping,
+        snippet/summary และคำแปลที่มี
+RULE-06 Pagination, no-results, unavailable-source และ incomplete-index state
+RULE-07 Player View Original ต้องไม่เปิด full PDF ที่มี GM content โดยอัตโนมัติ
+        ใช้ permitted excerpt/page view ที่ผ่านการตรวจ spoiler หรือไม่เปิดปุ่ม
+
+AI-01 Flow: Question -> Permission-filtered retrieval -> Relevant source
+      -> Gemini -> Validated answer -> Source citations
+AI-02 กรองสิทธิ์ก่อนส่ง context ให้โมเดล ไม่ส่ง GM secret แล้วหวังให้ AI ซ่อนเอง
+AI-03 ผลตอบแยก OFFICIAL RULE / EXPLANATION / AI SUGGESTION
+AI-04 Official claims ต้องเชื่อมกับ source ที่ retrieve ได้จริง
+AI-05 ห้ามสร้าง page number, citation หรือข้อความกฎที่ไม่มีใน context
+AI-06 ถ้าค้นไม่พบ ให้บอกว่าไม่พบหลักฐานเพียงพอและเสนอคำค้นที่เกี่ยวข้อง
+AI-07 GM assistant ช่วยอธิบาย rule/scene, แนะนำ skill และสรุปการเตรียมได้
+      ส่วนที่เป็น recommendation ต้องติดป้าย
+AI-08 Treat retrieved/scanned text as data ไม่ใช่คำสั่งที่เปลี่ยน system policy
+AI-09 AI ไม่มีสิทธิ์เปลี่ยน game state โดยตรง; ข้อเสนอผ่าน domain action,
+      permission และผู้ใช้ยืนยันเมื่อมีการนำไปใช้
+AI-10 Gemini API key อยู่ Script Properties และไม่ถูกส่งให้ browser
+AI-11 มี timeout/retry/backoff/rate limits ที่เหมาะสม พร้อม graceful failure
+AI-12 หาก Gemini ใช้ไม่ได้ campaign/character/session ที่ไม่พึ่ง AI ยังใช้ได้
+AI-13 แสดงว่าข้อความ/ภาพใดถูกส่งไป AI; ส่งเฉพาะบริบทจำเป็นของ request
+AI-14 Cache key ต้องรวม source version, language, campaign/visibility scope
+      และปัจจัย permissions ที่จำเป็น ห้ามตอบ cached GM answer ให้ Player
+AI-15 AIHistory มี user/campaign/session, question, answer type, source refs,
+      timestamp, visibility และ model version; ห้าม log API key/token
+
+======================================================================
+15. Scanner, Materials และ GM Narration
+======================================================================
+
+SCAN-01 Input: Camera/Upload สำหรับ Book Page, Card, Handout,
+        Character Sheet, Other Image
+SCAN-02 Flow: Capture -> Analyze -> Extract Text -> Translate -> Explain
+SCAN-03 ผู้ใช้ตรวจ/แก้ OCR ก่อนบันทึกเป็น verified source
+SCAN-04 เก็บ original image และ extracted/corrected text แยกกัน
+SCAN-05 Material fields: MaterialID, CampaignID, SessionID (optional), Type,
+        Title, Source, PrintedPage, EnglishText, TranslatedText, Summary,
+        Tags, Visibility, DriveFileID, ProcessingStatus
+SCAN-06 ตรวจชนิด/ขนาดไฟล์ กำหนดขีดจำกัดจาก platform จริงและแจ้งใน UI
+SCAN-07 Upload เริ่ม private; ห้ามเผย source โดยอัตโนมัติหลังสแกนสำเร็จ
+SCAN-08 ภาพ/ข้อความที่อัปโหลดไม่ใช่กฎที่ engine เชื่อถือทันที
+
+GM Narration modes:
+Translate: แปลตามความหมาย รักษารายละเอียดและข้อจำกัด
+Narrate: เรียบเรียงให้อ่านออกเสียงได้ แต่ไม่เพิ่มข้อเท็จจริง/เฉลยใหม่
+NARR-01 ใช้ player-safe source เท่านั้นเมื่อ output เตรียมอ่านให้ Player
+NARR-02 GM ตรวจ output ก่อน Reveal/Publish to players
+NARR-03 เก็บ source และ translation/narration แยกเพื่อเปรียบเทียบ
+
+======================================================================
+16. Story, Clues และ Handouts
+======================================================================
+
+STORY-01 Scene fields: SceneID, CampaignID, Name, Number, Description,
+         GMSummary, PlayerDescription, NPCIDs, EnemyIDs, LocationIDs,
+         ClueIDs, HandoutIDs, ImportantRuleIDs, Notes, Status, Visibility
+STORY-02 Scene Status: NOT_STARTED, ACTIVE, COMPLETED, SKIPPED
+STORY-03 NPC, Enemy, Location แยก public/player information กับ GM secrets
+STORY-04 Scene อยู่ระดับ Campaign และถูกใช้งานใน Session ได้
+         ประวัติ scene ที่เล่นเก็บผ่าน events/session links
+STORY-05 NPC interaction และ important story changes บันทึกเข้า journal ได้
+
+CLUE-01 Clue fields: ClueID, CampaignID, Name, Description, Translation,
+        ImageFileID, SceneID, Status, Visibility, RevealedAt, RevealedBy
+CLUE-02 สิ่งที่ยัง hidden ไม่อยู่ใน Player API/search/AI/export/thumbnail
+CLUE-03 GM เลือก clue แล้ว Reveal ให้ทั้ง Campaign หรือ selected players
+CLUE-04 Reveal เป็น audited/idempotent action; เลือก UserID ไม่ใช้ชื่อ
+CLUE-05 ต้องอธิบายว่าการ revoke หลังเผยแล้วไม่ทำให้คนลืมหรือถอนสำเนาที่เคยเห็น
+
+HAND-01 Handout view: Original / Thai / Original + Thai
+HAND-02 ผู้เล่นแต่ละคนเลือกภาษาเอง ไม่เปลี่ยน display ของคนอื่น
+HAND-03 Original file และ translated text ใช้ access scope เดียวกัน
+HAND-04 Image/file download ต้องตรวจสิทธิ์; ไม่แชร์ Drive folder ทั้ง Campaign
+        แบบเปิดกว้างเพื่อให้ handout เพียงชิ้นเดียวโหลดได้
+
+======================================================================
+17. UX, Navigation และ Responsive Design
+======================================================================
+
+Pre-campaign screens:
+Login, My Campaigns, Invitations, Create Campaign, User Preferences
+
+Player navigation:
+HOME, INVESTIGATOR, PLAY, CAMPAIGN, RULEBOOK, AI, MORE
+
+GM navigation:
+HOME, SESSION, INVESTIGATORS, STORY, CAMPAIGN, RULEBOOK, AI, MORE
+
+Player Home:
+My Investigator, Current Dice Pool, Horror, Insight, Injuries,
+Current Session, Recent Clues, Quick Roll, Ask Rule
+
+GM Home:
+Current Session, Players, Current Scene, Investigator Status,
+NPCs, Enemies, Clues, Handouts, Quick Rule Search, GM Notes
+
+UX-01 Player mobile-first; controls ใช้งานด้วย touch และอ่านเลขสถานะได้ทันที
+UX-02 Desktop/Tablet GM มีภาพรวมหลายตัวละครและ current scene
+UX-03 ลดจำนวนคลิกสำหรับ Roll, Reveal, Ask Rule และ Scan
+UX-04 ทุก mutation มี saving/saved/error/conflict feedback
+UX-05 ปิดการกดซ้ำระหว่าง request แต่ยังต้องป้องกันซ้ำบน server
+UX-06 ไม่แสดง secret content ระหว่าง loading ก่อน role ถูกตรวจสอบ
+UX-07 มี empty/loading/error/offline states ครบ ไม่ปล่อยหน้าว่าง
+UX-08 ใช้ text label ร่วมสีในการบอกสถานะ และรองรับ keyboard/focus
+UX-09 Layout รองรับข้อความไทยและคำแปลที่ยาวขึ้น
+UX-10 ตัวอย่างชื่อ, pool, horror และ insight ใน mockup เป็น sample data
+      ห้ามนำไป hardcode เป็น default game mechanic
+
+======================================================================
+18. Data Dictionary และ Google Sheets Structure
+======================================================================
+
+กติกากลาง:
+- ID ไม่เปลี่ยนเมื่อแก้ชื่อ และต้อง unique
+- Datetime เก็บรูปแบบมาตรฐานเดียว เช่น ISO-8601 UTC และแสดงตาม timezone
+- ทุก mutable record มี CreatedAt, UpdatedAt, Version; เพิ่ม actor เมื่อจำเป็น
+- Monetary values ใช้หน่วยย่อยแบบ integer หากจำเป็นเพื่อหลีกเลี่ยง rounding
+- ข้อมูลเขียนลง Sheet ต้องไม่ถูกตีความเป็น formula จากข้อความผู้ใช้
+- ระบุ columns/required fields/enum/foreign keys ใน schema จริงของแต่ละ STEP
+- Sheets ไม่ได้ enforce FK เอง; repository/domain layer ต้องตรวจ
+- รายการต่อไปนี้เป็น logical minimum; developer เสนอ normalization เพิ่มได้
+
+Users
+  UserID [PK], GoogleSubjectID [UNIQUE], Email, EmailVerified,
+  DisplayName, PreferredLanguage, CreatedAt, LastLoginAt
+
+Campaigns
+  CampaignID [PK], OwnerUserID [FK], Name, Description, DefaultLanguage,
+  ImageFileID, Setting, Notes, Status, LastPlayedAt, Version
+
+CampaignMembers
+  CampaignMemberID [PK], CampaignID [FK], UserID [FK], Role, Status,
+  JoinedAt, InvitedBy; UNIQUE(CampaignID, UserID)
+
+CampaignInvites
+  InviteID [PK], CampaignID, InvitedEmail, Role, Status, InvitedBy,
+  CreatedAt, ExpiresAt, AcceptedByUserID, AcceptedAt
+
+CampaignSettings
+  SettingID [PK], CampaignID, Key, ValueJSON, Version
+  เช่น AllowedSources, Tone, StartingXPRule, EnabledHouseRules
+
+Sessions
+  SessionID [PK], CampaignID, Number, Name, Date, Description, Status,
+  CurrentSceneID, StartedAt, EndedAt, SnapshotID, Version
+
+SessionPlayers
+  SessionPlayerID [PK], CampaignID, SessionID, UserID, CharacterID,
+  Attendance, JoinedAt, LeftAt
+
+SessionEvents
+  EventID [PK], CampaignID, SessionID, EventType, ActorUserID,
+  TargetID, PayloadJSON, Visibility, CreatedAt, RequestID
+
+Characters
+  CharacterID [PK], CampaignID, OwnerUserID, Name, BackgroundJSON,
+  PersonalityEntityID, ArchetypeEntityID, Status, StartingPackage,
+  MoneyRemaining, XPAvailable, ApprovedBy, ApprovedAt,
+  LiveStateJSON หรือ typed state columns ที่ตกลง, Version
+
+CharacterSkills
+  CharacterSkillID [PK], CampaignID, CharacterID, SkillEntityID, Threshold
+
+CharacterKnacks
+  CharacterKnackID [PK], CampaignID, CharacterID, KnackEntityID,
+  AcquiredAt, SourceEventID
+
+CharacterItems
+  CharacterItemID [PK], CampaignID, CharacterID, ItemEntityID,
+  Quantity, StateJSON, ApprovalStatus, SourceEventID
+
+CharacterEffects
+  EffectID [PK], CampaignID, CharacterID, EffectType, SourceEntityID,
+  StateJSON, StartedAt, EndedAt, SourceEventID
+  รองรับ injury/trauma/effect แบบแยก type และกฎเฉพาะ
+
+CharacterResources
+  ResourceID [PK], CampaignID, CharacterID, ResourceType,
+  NameOrEntityID, Value, Limit, SourceEventID
+
+Books
+  BookID [PK], Title, Edition, FileHash, DriveFileID, ImportStatus,
+  ImportedAt, Visibility, SourceVersion
+
+GameEntities
+  EntityID [PK], EntityType, CanonicalName, EnglishDescription,
+  MechanicalDataJSON, BookID, PrintedPage, PDFPageIndex, Section,
+  Keywords, OriginalSource, Visibility, VerificationStatus, SourceVersion
+
+Rules
+  RuleID [PK], EntityID, Topic, RuleDataJSON, Exceptions,
+  VerificationStatus, RuleVersion, SourceReferencesJSON
+
+Translations
+  TranslationID [PK], EntityIDOrObjectID, LanguageCode, SourceVersion,
+  TranslatedName, TranslatedText, Status, ReviewedBy, UpdatedAt
+  ต้อง resolve permission ผ่านต้นทางเสมอ
+
+Scenes / NPCs / Enemies / Locations
+  ObjectID [PK ของแต่ละชนิด], CampaignID, Name, SourceEntityID (optional),
+  PlayerDataJSON, GMDataJSON, Visibility, Status, Version
+  Scene เพิ่ม links/status ตามหมวด Story; source entity ไม่ใช่ campaign instance
+
+Clues / Handouts
+  ObjectID [PK ของแต่ละชนิด], CampaignID, SceneID, Name,
+  OriginalText, TranslationRef, DriveFileID, Status, Visibility,
+  RevealedAt, RevealedBy, Version
+
+Materials
+  MaterialID [PK], CampaignID, SessionID, Type, Title, Source,
+  PrintedPage, EnglishText, TranslatedText, Summary, Tags,
+  Visibility, DriveFileID, ProcessingStatus, Version
+
+RollHistory
+  RollID [PK], CampaignID, SessionID, CharacterID, ActorUserID,
+  SkillEntityID, InputsJSON, ResultsJSON, StateBeforeJSON,
+  StateAfterJSON, RuleVersion, Visibility, CreatedAt, RequestID
+
+Notes
+  NoteID [PK], CampaignID, SessionID (optional), OwnerUserID,
+  Title, Body, Visibility, Version
+
+AIHistory
+  AIHistoryID [PK], CampaignID, SessionID (optional), UserID,
+  Question, Answer, AnswerType, SourcesJSON, Visibility, CreatedAt
+
+Supporting tables ที่เสนอเพื่อให้ requirements ข้างต้นทำงานครบ:
+SessionSnapshots: immutable end-session data + player-safe/GM separation
+CharacterAdvancements: XP ledger, purchases และ corrections
+RuleChunks: searchable source text + page/visibility metadata
+ObjectAccess: ObjectType, ObjectID, CampaignID, permitted UserID
+AuditLog: security/domain mutations พร้อม actor และเหตุผล
+MutationRequests: idempotency key, actor, operation, status, result reference
+ImportJobs: source, progress, checkpoint, errors, status
+SchemaMigrations: schema version และ migration ที่ apply แล้ว
+
+หากรวม supporting data ในตารางเดิมได้ ให้ระบุ mapping ที่ตรวจสอบได้
+ห้ามตัด requirement ทิ้งเพราะไม่มีชื่อตารางในรายการแรก
+
+======================================================================
+19. Drive Storage และ File Access
+======================================================================
+
+Logical folder structure:
+Arkham RPG Companion / Corebook
+Arkham RPG Companion / Campaigns / {CampaignID} / Handouts
+Arkham RPG Companion / Campaigns / {CampaignID} / Scans
+Arkham RPG Companion / Campaigns / {CampaignID} / Characters
+Arkham RPG Companion / Campaigns / {CampaignID} / Exports
+Arkham RPG Companion / Cache
+
+FILE-01 Private by default; ไม่ใช้ anyone-with-link กับ Corebook/GM files
+FILE-02 แสดงไฟล์ผ่านวิธีที่ตรวจสิทธิ์สอดคล้องกับ role/visibility
+FILE-03 ห้ามเชื่อ arbitrary DriveFileID จาก client; ตรวจ mapping/ownership
+FILE-04 Player access ต้องไม่ทำให้เปิดดู parent folder หรือ raw Sheets ได้
+FILE-05 Material removal/archive ต้องไม่ทำลาย source reference ของ history
+FILE-06 กำหนดวิธีจัดการ orphan files และงานที่อัปโหลดแล้วแต่ DB write ล้มเหลว
+
+======================================================================
+20. Server Contract และ Data Integrity
+======================================================================
+
+ตัวอย่าง operation names (ปรับชื่อได้ แต่ behavior ต้องครบ):
+getMyCampaigns, createCampaign, inviteMember, respondToInvite,
+getCampaignDashboard, createSession, setAttendance, startSession,
+pauseSession, resumeSession, endSession, getSessionHistory,
+saveCharacterDraft, submitCharacter, reviewCharacter,
+applyCharacterAction, advanceCharacter, rollDice,
+searchRules, askRuleAssistant, saveScene, revealClue,
+saveHandout, uploadMaterial, translateMaterial, getGMNotes
+
+API-01 ทุก authenticated entry point ใช้ auth context ที่ server สร้าง
+API-02 Input schema validation, field allowlist, type/length/range checks
+API-03 ห้าม generic saveRow/updateAnySheet ที่ client เลือกตาราง/column ได้เอง
+API-04 Response มี success/data หรือ error code/message พร้อม requestId
+API-05 Error codes อย่างน้อย: UNAUTHENTICATED, FORBIDDEN, NOT_FOUND,
+       VALIDATION_ERROR, VERSION_CONFLICT, RULE_NOT_VERIFIED,
+       RATE_LIMITED, SOURCE_UNAVAILABLE, INTERNAL_ERROR
+API-06 อย่าเปิดเผยว่า secret object มีอยู่ผ่าน error message หรือ search count
+API-07 Internal helpers ไม่เปิดให้ client เรียกข้าม permission entry point
+
+CON-01 ใช้ LockService ใน critical writes ตาม scope ที่เหมาะสม
+CON-02 ส่ง expected Version; server ปฏิเสธ stale write แทน silent overwrite
+CON-03 อ่านค่าที่ใช้ validate อีกครั้งภายใน lock ก่อนคำนวณ/เขียน
+CON-04 Roll/XP/reveal/end-session ต้องใช้ idempotency และ recoverable status
+CON-05 ระบุ failure recovery ของ multi-sheet operations ให้ชัด เพราะ lock
+       อย่างเดียวไม่ได้ทำให้หลาย write เป็น database transaction
+CON-06 Batch writes ลดจำนวน calls แต่ไม่ละเลย data validation
+CON-07 Audit ต้องไม่บรรจุ credentials และต้องกรองก่อนให้ Player อ่าน
+
+======================================================================
+21. Non-functional Requirements
+======================================================================
+
+NFR-01 Security: backend authorization ครบทุก endpoint รวม search/AI/files
+NFR-02 Privacy: raw Sheet, Corebook, GM notes และ scans ไม่เปิดสาธารณะ
+NFR-03 Persistence: ปิด browser/login ใหม่แล้วยังอ่านข้อมูลเดิมได้
+NFR-04 Reliability: network retry ไม่ทำให้ roll/XP/items/session จบซ้ำ
+NFR-05 Performance: batch reads/writes, indexed lookup, scoped cache,
+       pagination และ incremental refresh
+NFR-06 Quota: ตรวจ current platform limits และออกแบบ batch/checkpoint
+       ห้าม hardcode ตัวเลข quota จากความจำหรืออ้างใช้งานได้ไม่จำกัดจริง
+NFR-07 Recovery: มี backup/export และ restore procedure ที่รักษา IDs/permissions
+NFR-08 Maintainability: versioned schema, non-destructive migrations,
+       environment config และแยก domain modules
+NFR-09 Accessibility: readable contrast, touch targets, keyboard/focus,
+       labels และไม่ใช้สีอย่างเดียว
+NFR-10 Observability: error logging พร้อม request ID โดยไม่เปิดเผย secrets
+NFR-11 Copyright: private companion; ไม่ทำ public PDF download, public
+       rulebook dump หรือ public artwork redistribution
+NFR-12 AI resilience: ใช้แอปพื้นฐานต่อได้เมื่อ AI unavailable/quota exhausted
+
+PROPOSED performance targets เพื่อใช้วัดและปรับหลัง prototype:
+- Dashboard ที่มี cache: p95 ไม่เกิน 5 วินาที ภายใต้ test workload ที่ตกลง
+- Mutation ทั่วไปที่ไม่ใช้ AI: p95 ไม่เกิน 5 วินาที
+- Live state refresh ระหว่างเล่น: ช่วงประมาณ 5–10 วินาทีแบบปรับได้
+- AI/scan: แสดง processing/progress และ timeout ที่กำหนด; ไม่รับประกันเท่ากัน
+ตัวเลขข้างต้นเป็นเป้าหมายทดสอบ ไม่ใช่คำรับประกันของ Apps Script
+กำหนดจำนวน concurrent users, records และอุปกรณ์ก่อนทดสอบ performance จริง
+
+======================================================================
+22. MVP และขอบเขตการส่งมอบ
+======================================================================
+
+MVP REQUIRED:
+Google Login; My Campaigns; Create Campaign; Invite/Join;
+Membership; GM/Co-GM/Player permissions; Sessions/Attendance;
+Investigator Wizard; Approval; Digital Sheet; Corebook Database;
+English/Thai; Rule Search; Source-grounded AI Rule Assistant;
+Dice Pool/Roller/History; Horror/Insight/Injury/Trauma tracking ตามกฎ;
+Equipment; Advancement; GM Dashboard; Clues; Handouts; Basic Scenes;
+Session Snapshots และ Basic Timeline เพื่อให้เล่นต่อเนื่องได้จริง
+
+FULL V1 EXTENSIONS:
+Scanner/OCR/translation; richer NPC/Enemy/Location management;
+GM Narration; richer Campaign Journal; advanced import/review tools;
+expanded export/restore UX และ performance polish
+
+ต้องไม่เรียก "MVP complete" หากมีเพียง Campaign CRUD แต่ยังไม่ได้ character,
+rule validation และ session continuation ตามขอบเขต MVP
+Foundation milestone เป็นส่วนหนึ่งของ MVP ไม่ใช่ MVP ทั้งหมด
+
+======================================================================
+23. Development Roadmap และ Gates
+======================================================================
+
+Phase 1 Foundation
+GitHub repository/Codespaces setup, App shell, configuration, Users,
+Google Login, identity verification, CI checks (ถ้าเลือกใช้) และ
+permission infrastructure
+Gate: ผู้ใช้สองบัญชี login ผ่าน deployment จริง; identity spoofing ถูกปฏิเสธ
+
+Phase 2 Corebook Database
+Import/index, entities, rule verification register, translations structure
+Gate: sample source citations เปิดตรงหน้า, GM content ถูก classify,
+mechanical rules ที่จะใช้ใน phase ถัดไปผ่าน verification
+
+Phase 3 Campaign
+My Campaigns, Create, Invite, Join, Roles, dashboards
+Gate: ทดสอบ A/B/C accounts และ cross-campaign isolation ผ่าน
+
+Phase 4 Character Creator
+Background, Personality, Archetype, Skills, Knacks, Equipment,
+Starting Package, validation, Submit/Approval
+Gate: valid/invalid build, budget, GM-only approval, permission exceptions ผ่าน
+
+Phase 5 Investigator Sheet
+Character data/resources/live state, injury/trauma/effects
+Gate: เปลี่ยนภาษาหรือเปิดใหม่ไม่เปลี่ยน/สูญเสีย state
+
+Phase 6 Sessions
+Create, Attendance, Start/Pause/Resume/End, snapshot/history พื้นฐาน
+Gate: จบ Session 1 แล้วเริ่ม Session 2 ใช้ character เดิมและอ่านอดีตได้ถูกต้อง
+
+Phase 7 Play System
+Dice engine, live state mutation, roll history, synchronization
+Gate: verified game scenarios, concurrent roll, duplicate retry และ stale write ผ่าน
+
+Phase 8 Rulebook & AI
+Bilingual search, role-aware retrieval, grounded answers, citations
+Gate: known-answer/no-source/spoiler/prompt-injection/cache-isolation tests ผ่าน
+
+Phase 9 GM Tools
+Scenes, NPCs, Enemies, Locations, Clues, Handouts, Visibility
+Gate: hidden/revealed/selected-player data ถูกต้องทั้ง API และ files
+
+Phase 10 Scanner
+Camera, upload, extraction, translation, review, material library
+Gate: source traceability, OCR correction และ private upload ผ่าน
+
+Phase 11 Campaign Journal
+Expanded timeline, summaries, XP/character history, export/restore
+Gate: restore sample Campaign รักษา IDs/links/permissions และ history ได้
+
+Phase 12 Polish
+Mobile/tablet, accessibility, performance, quota behavior, errors,
+setup documentation และ regression review
+Gate: MVP acceptance tests ทั้งหมดผ่านใน target deployment
+
+แต่ละ Phase แบ่งได้หลาย STEP; ต้องตรวจ prerequisite ก่อนเริ่ม
+ไม่จำเป็นต้องรอ Phase 11 จึงค่อยเก็บ events/snapshots: โครงสร้างประวัติต้อง
+เริ่มตั้งแต่ feature ที่สร้างข้อมูล เพื่อไม่สูญเสียอดีตที่สร้างไปแล้ว
+
+======================================================================
+24. Acceptance Test Matrix
+======================================================================
+
+AT-01 Authentication
+Given ผู้ใช้ไม่มี session ที่ตรวจแล้ว
+When เรียก campaign endpoint
+Then ไม่ส่ง campaign data และแจ้งให้ login
+
+AT-02 Campaign Isolation
+Given A เป็น GM Campaign X แต่ไม่เป็นสมาชิก Y
+When ส่ง CampaignID/ObjectID ของ Y
+Then ถูกปฏิเสธ แม้ A จะเป็น GM ใน X
+
+AT-03 Invite Identity
+Given invite สำหรับ B
+When C เปิด/ตอบรับ invite
+Then C ไม่ได้เป็น member; B ใช้ verified account จึงตอบรับได้
+
+AT-04 Spoiler Protection
+Given NPC/clue มี GM secret
+When Player โหลด dashboard/search/AI/translation/export/file
+Then ไม่มี secret ใน response, context, cache หรือ file access
+
+AT-05 Character Ownership
+Given Player A และ B มี characters คนละตัว
+When A ส่ง mutation ของ B
+Then ถูกปฏิเสธ รวมการปลอม OwnerUserID ใน payload
+
+AT-06 Character Validation
+Given rules ที่ VERIFIED แล้ว
+When เลือก skills/knack/equipment/starting package ผิดกฎ
+Then server ปฏิเสธพร้อมเหตุผลและ source reference
+
+AT-07 GM Approval
+Given build ต้องขอ permission
+When Player Submit
+Then ยังไม่ Ready จน GM อนุมัติ และ Player อนุมัติตนเองไม่ได้
+
+AT-08 Language Independence
+Given GM ใช้ en และ Player ใช้ th
+When เปลี่ยนภาษา
+Then character IDs, pool, XP, items, rolls และ session state คงเดิม
+
+AT-09 Continuity
+Given Session 1 จบพร้อม injuries/items/XP
+When เริ่ม Session 2
+Then ตัวละครเดิมต่อเนื่อง และ snapshot Session 1 ไม่เปลี่ยนเมื่อเล่น Session 2
+
+AT-10 Attendance
+Given สมาชิกไม่ได้มา Session นี้
+When GM บันทึก attendance
+Then membership ยังอยู่; snapshot บันทึกเฉพาะผู้ที่เข้าร่วมตามจริง
+
+AT-11 Dice Source Accuracy
+Given ชุดตัวอย่าง/edge cases จาก Corebook ที่ตรวจแล้ว
+When คำนวณ roll/horror/pool/damage
+Then ผลตรงกฎ พร้อม source และ rule version
+
+AT-12 Duplicate Mutation
+Given request ID เดิมของ roll, XP purchase หรือ end-session
+When retry สองครั้ง
+Then ได้ผลเดิมและเกิดผลทาง mechanics เพียงครั้งเดียว
+
+AT-13 Concurrent Editing
+Given สองอุปกรณ์อ่าน character version เดียวกัน
+When ส่ง mutation ที่ขัดแย้ง
+Then ไม่เสีย XP/pool หรือ overwrite เงียบ; server resolve/reject อย่างชัดเจน
+
+AT-14 AI Grounding
+Given คำถามที่มี/ไม่มี source
+When Ask Rule
+Then คำตอบที่อ้าง official มี source จริง หรือบอกว่าหาหลักฐานไม่พบ
+
+AT-15 Selected Reveal
+Given clue เผยให้ Player A เท่านั้น
+When A/B ดูข้อมูล
+Then A เห็นและ B ไม่เห็น รวม search, translations, AI และ files
+
+AT-16 Revocation
+Given member ถูก REMOVED หรือ role ลดลง
+When request ถัดไปใช้ session เดิม
+Then server บังคับ permission ใหม่ ไม่เชื่อ role cache เก่า
+
+AT-17 Service Failure
+Given Gemini/Drive/network ชั่วคราวล้มเหลว
+When ใช้ฟีเจอร์ที่เกี่ยวข้อง
+Then แสดง error/retry ไม่สูญเสียข้อมูลที่ commit แล้ว และไม่ส่งผลซ้ำ
+
+AT-18 Snapshot Failure Recovery
+Given end-session ล้มเหลวกลาง multi-sheet operation
+When retry/recover
+Then snapshot, XP และ session status สอดคล้องและไม่มี duplicate award
+
+AT-19 Rule Visibility
+Given Player คลิก View Original ของ player rule
+Then ไม่ได้ full-book access ที่เผย GM-only content โดยไม่ตั้งใจ
+
+AT-20 Restore and Migration
+Given backup/test dataset เวอร์ชันก่อนหน้า
+When restore/migrate ตามคู่มือ
+Then IDs, foreign keys, permissions, history และ canonical language คงถูกต้อง
+
+======================================================================
+25. Deliverables และ Definition of Done
+======================================================================
+
+ทุก STEP ส่งมอบ:
+1. วัตถุประสงค์และขอบเขตที่ทำในรอบนี้
+2. รายชื่อไฟล์ที่ Codex สร้าง/แก้ พร้อมสรุปการเปลี่ยนแปลง
+3. Google Sheets schema/column changes และ migration ที่ไม่ลบข้อมูลเดิม
+4. Script Properties/Codespaces Secrets/config ที่ต้องตั้ง โดยใช้ชื่อ key และ
+   placeholder เท่านั้น ห้ามพิมพ์ค่าจริงของ secret
+5. OAuth/deployment/scopes ที่จำเป็น พร้อมเหตุผลและขั้นตอน
+6. วิธีเปิด Codespace, ติดตั้ง dependencies และรัน setup/test ทีละข้อ
+7. Test procedure และ expected results
+8. ผลทดสอบที่ Codex รันได้จริง พร้อมแยกสิ่งที่ต้องให้ผู้ใช้ทดสอบใน Google
+9. Known limitations, unresolved questions และ rollback/recovery เมื่อจำเป็น
+10. Progress record: STEP ปัจจุบัน, completed, pending, source rules verified
+11. สรุป diff และสถานะ Git; ห้ามอ้างว่า commit/push/deploy แล้วหากยังไม่ได้ทำ
+
+แนะนำแยกไฟล์/โมดูลตามหน้าที่ เช่น Config, Auth, Permissions, Repository,
+Campaigns, Characters, Sessions, Rules, Dice, AI, Materials และ UI
+ชื่อไฟล์จริงให้ตกลงตามโครงสร้าง Apps Script; อย่ารวมทุกอย่างไว้ในไฟล์เดียว
+
+Definition of Done ของ feature:
+- ใช้งานได้จาก UI ถึง persistence จริง
+- server validation/permission ครบ
+- ไม่มี secrets รั่วใน response/log/client
+- รองรับ success/loading/error และ retry ที่เกี่ยวข้อง
+- มี source verification สำหรับ game mechanics
+- ผ่าน acceptance tests ที่สัมพันธ์กับ feature
+- คู่มือติดตั้งตรงกับโค้ดที่ส่ง
+- ไม่ทำลาย feature ที่ผ่านการทดสอบแล้ว
+
+======================================================================
+26. Open Decisions ก่อนลงมือส่วนที่เกี่ยวข้อง
+======================================================================
+
+OD-01 Google deployment/auth flow ที่ใช้ได้จริงกับบัญชี GM และ Players
+OD-02 Storage ownership: owner-centralized ตามข้อเสนอ หรือแยก GM-owned storage
+OD-03 จำนวน concurrent players/campaigns และ dataset สำหรับ performance test
+OD-04 ขอบเขต Co-GM และสิทธิ์ private notes ตาม default ที่ระบุ
+OD-05 จำนวน active investigators ต่อ Player/Campaign และการ retire/replacement
+OD-06 Campaign timezone และการนับ session date
+OD-07 Co-GM/Player เห็น Investigator คนอื่นระดับใดใน party overview
+OD-08 Gemini model/config และขอบเขตข้อมูล private ที่อนุญาตให้ส่งเพื่อประมวลผล
+OD-09 Email notification ของ invitation จะเปิดหรือใช้ in-app ก่อน
+OD-10 Official rules ที่ยัง NEEDS_VERIFICATION รวม page mapping และ edition
+OD-11 การใช้ custom rules/allowed sources และ policy เมื่อ source ขัดแย้ง
+OD-12 ผู้ดูแลการตรวจ OCR/translation/rule verification และขั้น approve source
+OD-13 GitHub repository และ Codespaces เป็นค่าเริ่มต้นตาม brief นี้;
+      ชื่อ repository, visibility และ branch policy ให้ผู้ใช้เลือกตอน setup
+
+ให้ถามเฉพาะ decision ที่ขัดขวาง STEP ปัจจุบันจริง
+เรื่องที่ใช้ proposed default ได้ให้ระบุ assumption ชัดเจน ไม่หยุดทั้งโปรเจกต์
+ห้ามใช้คำตอบที่ยังไม่มีเป็นเหตุให้เดากฎเกมหรืออ้างว่าระบบปลอดภัยแล้ว
+
+======================================================================
+END OF MASTER BRIEF
+======================================================================
+
+Expected experience:
+Player: Google Login -> My Campaigns -> Campaign -> My Investigator
+        -> Join Session -> Play -> กลับมาเล่น Session ถัดไปด้วยข้อมูลเดิม
+GM: Google Login -> Campaign -> Dashboard -> Start Session -> Manage Story
+    -> Reveal Clues/Handouts -> End Session -> Review Journal
+
+เริ่มพัฒนาทีละ STEP ตรวจสอบก่อนเดินต่อ และใช้ Corebook เป็นหลักฐานของกฎเสมอ

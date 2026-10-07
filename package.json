@@ -1,0 +1,22 @@
+{
+  "name": "arkham-rpg-companion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private, bilingual Arkham Horror RPG campaign companion",
+  "engines": { "node": ">=22 <25" },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env scripts/dev-server.cjs",
+    "build": "node scripts/build.cjs",
+    "preview": "node scripts/build-preview.cjs preview/arkham-preview.html",
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "playwright test",
+    "check": "npm run build && npm test",
+    "configure": "node scripts/configure-clasp.cjs",
+    "clasp": "clasp",
+    "setup": "npm run build"
+  },
+  "devDependencies": {
+    "@google/clasp": "3.4.1",
+    "@playwright/test": "1.63.0"
+  }
+}

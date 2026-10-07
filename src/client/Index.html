@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#181d1c">
+  <title>Arkham · Campaign Companion</title>
+  <?!= include_('Styles'); ?>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <main id="landing" class="landing">
+    <header class="landing-header">
+      <a class="brand" href="#" aria-label="Arkham Campaign Companion home">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span class="brand-name">ARKHAM<span data-i18n="brandSubtitle">CAMPAIGN COMPANION</span></span>
+      </a>
+      <div class="header-actions">
+        <span class="edition-label" data-i18n="privatePlatform">A PRIVATE CAMPAIGN PLATFORM</span>
+        <button class="language-button" type="button" data-language-toggle aria-label="Switch language">EN <span>/</span> ไทย</button>
+      </div>
+    </header>
+
+    <div class="landing-grid">
+      <section class="landing-copy" aria-labelledby="landing-title">
+        <div class="eyebrow"><span class="tiny-star" aria-hidden="true">✦</span><span data-i18n="landingEyebrow">FOR THE STORIES THAT STAY WITH YOU</span></div>
+        <h1 id="landing-title" data-i18n="landingTitle">Every story<br>leaves a trace.</h1>
+        <p class="landing-description" data-i18n="landingDescription">A home for your Arkham Horror RPG campaign. Bring your circle together, keep the secrets close, and prepare for the next chapter.</p>
+        <div class="landing-login">
+          <button id="google-sign-in" class="button button-parchment google-button" type="button" disabled>
+            <svg class="google-symbol" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.4-.2-2.1H12v4h5.5c-.2 1.3-1 2.4-2 3.1v2.6h3.4c2-1.8 2.9-4.5 2.9-7.6Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.4-2.6c-.9.6-2 .9-3.3.9-2.6 0-4.8-1.8-5.6-4.2H2.9v2.7A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.7a6 6 0 0 1 0-3.4V7.6H2.9a10 10 0 0 0 0 8.8l3.5-2.7Z"/><path fill="#EA4335" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9.1 5.6l3.5 2.7C7.2 7.9 9.4 6.1 12 6.1Z"/></svg>
+            <span data-i18n="googleSignIn">Continue with Google</span>
+            <span class="button-arrow" aria-hidden="true">→</span>
+          </button>
+          <p class="login-hint" data-i18n="loginPrivacy">Your Google account. Your private campaigns.</p>
+          <div id="auth-status" class="setup-notice" role="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <div><strong data-i18n="checkingConfig">Checking environment…</strong><p data-i18n="checkingDescription">Preparing a secure connection.</p></div>
+          </div>
+          <div id="ticket-fallback" class="ticket-fallback" hidden>
+            <p data-i18n="ticketInstructions">Complete Google sign-in in the new window. If it cannot return automatically, paste the one-time handoff ticket shown there.</p>
+            <form id="ticket-form"><label for="ticket-input" data-i18n="ticketLabel">One-time handoff ticket</label><div class="ticket-row"><input id="ticket-input" autocomplete="off" spellcheck="false" required><button class="button button-gold" type="submit" data-i18n="completeLogin">Finish sign-in</button></div></form>
+          </div>
+        </div>
+        <div class="landing-preview"><button id="explore-preview" type="button" class="text-button"><span data-i18n="explorePreview">Explore the interface</span><span aria-hidden="true">→</span></button><span class="small-muted" data-i18n="sampleReadOnly">Sample campaigns · read only</span></div>
+      </section>
+
+      <section class="landing-art" aria-label="Decorative campaign dossier">
+        <div class="art-coordinates">42°27′01″N&nbsp;&nbsp; 70°50′18″W <span>EST. 1926</span></div>
+        <svg class="sigil-art" viewBox="0 0 600 600" aria-hidden="true">
+          <defs><radialGradient id="sigilGlow"><stop offset="0" stop-color="#b5a06e" stop-opacity=".16"/><stop offset="1" stop-color="#b5a06e" stop-opacity="0"/></radialGradient><pattern id="sigilLines" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M0 20 20 0" stroke="#a08d60" stroke-opacity=".06" stroke-width="1"/></pattern></defs>
+          <circle cx="300" cy="300" r="295" fill="url(#sigilGlow)"/><circle cx="300" cy="300" r="225" fill="url(#sigilLines)" stroke="#9d916c" stroke-opacity=".35"/>
+          <g fill="none" stroke="#b3a071"><circle cx="300" cy="300" r="205" stroke-opacity=".55"/><circle cx="300" cy="300" r="182" stroke-opacity=".24"/><circle cx="300" cy="300" r="152" stroke-opacity=".2"/><path d="m300 117 158 274H142Z M300 483 142 209h316Z" stroke-opacity=".2"/><path d="M75 300h450 M300 75v450" stroke-opacity=".25"/><path d="m300 192 85 157-85-28-85 28Z M300 192v129 M215 349l85 60 85-60 M300 321v88" stroke-width="2" stroke-opacity=".75"/><circle cx="300" cy="282" r="41" stroke-opacity=".6"/><path d="m300 246 21 36-21 37-21-37Z" stroke-opacity=".75"/></g>
+          <g fill="#b3a071" opacity=".6"><circle cx="300" cy="75" r="3"/><circle cx="525" cy="300" r="3"/><circle cx="300" cy="525" r="3"/><circle cx="75" cy="300" r="3"/><path d="m300 97 4 8-4 8-4-8ZM493 300l8-4 8 4-8 4ZM300 487l4 8-4 8-4-8ZM91 300l8-4 8 4-8 4Z"/></g>
+          <g fill="#b3a071" font-family="Georgia,serif" font-size="11" letter-spacing="5" opacity=".65"><text x="300" y="140" text-anchor="middle">THE UNKNOWN AWAITS</text><text x="300" y="470" text-anchor="middle">ARKHAM · MASSACHUSETTS</text></g>
+        </svg>
+        <div class="art-bottom"><span class="art-line"></span><p data-i18n="artQuote">Some doors are better<br>opened together.</p><span class="art-line"></span></div>
+        <div class="art-footnote"><span data-i18n="foundationEdition">FOUNDATION EDITION</span><span>01 / 05</span></div>
+      </section>
+    </div>
+    <footer class="landing-footer"><span data-i18n="independentNotice">An independent companion for Arkham Horror: The Roleplaying Game.</span><span data-i18n="noBookContent">Private by design. No rulebook content distributed.</span></footer>
+  </main>
+
+  <div id="workspace" class="workspace" hidden>
+    <div id="preview-banner" class="preview-banner" hidden><span><span class="status-dot"></span><span data-i18n="previewBanner">Design preview · sample data · read only</span></span><button id="exit-preview" type="button" data-i18n="backToSignIn">Back to sign-in →</button></div>
+    <aside id="sidebar" class="sidebar">
+      <a class="brand sidebar-brand" href="#" aria-label="Arkham Campaign Companion home"><span class="brand-mark" aria-hidden="true">A</span><span class="brand-name">ARKHAM<span data-i18n="brandSubtitle">CAMPAIGN COMPANION</span></span></a>
+      <div class="sidebar-rule"></div>
+      <p class="nav-label" data-i18n="yourWorkspace">YOUR WORKSPACE</p>
+      <nav class="main-navigation" aria-label="Main navigation">
+        <button type="button" data-view="campaigns" class="nav-item active"><span class="nav-icon" aria-hidden="true">▦</span><span data-i18n="myCampaigns">My campaigns</span><span class="nav-count" id="campaign-count">0</span></button>
+        <button type="button" data-view="invitations" class="nav-item"><span class="nav-icon" aria-hidden="true">✉</span><span data-i18n="invitations">Invitations</span><span class="nav-count" id="invitation-count">0</span></button>
+      </nav>
+      <div class="sidebar-rule"></div>
+      <p class="nav-label" data-i18n="nextChapters">THE NEXT CHAPTERS</p>
+      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">♧</span><span data-i18n="investigators">Investigators</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
+      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">◷</span><span data-i18n="sessions">Sessions</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
+      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">▤</span><span data-i18n="campaignJournal">Campaign journal</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
+      <div class="sidebar-bottom"><div class="edition-card"><span class="edition-symbol" aria-hidden="true">✦</span><span data-i18n="editionCard">A place to gather.<br>A story to remember.</span></div><div class="profile"><div class="avatar" id="profile-avatar">A</div><div class="profile-text"><strong id="profile-name">Investigator</strong><span id="profile-label" data-i18n="googleAccount">Google account</span></div><button id="sign-out" class="icon-button" type="button" aria-label="Sign out" title="Sign out">→</button></div></div>
+    </aside>
+    <div class="main-column">
+      <header class="workspace-header"><div class="breadcrumb"><span data-i18n="workspaceLabel">WORKSPACE</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">My campaigns</strong></div><div class="header-actions"><span class="header-private"><span class="status-dot" aria-hidden="true"></span><span data-i18n="privateWorkspace">Private workspace</span></span><button type="button" class="language-button" data-language-toggle aria-label="Switch language">EN <span>/</span> ไทย</button><button id="mobile-sign-out" class="icon-button mobile-sign-out" type="button" aria-label="Sign out" title="Sign out">→</button></div></header>
+      <main id="app-content" class="app-content" tabindex="-1"></main>
+      <footer class="workspace-footer"><span>ARKHAM HORROR RPG <span class="footer-divider">/</span> <span data-i18n="foundationEdition">FOUNDATION EDITION</span></span><span data-i18n="workspaceFooter">Every campaign is a world of its own.</span><span class="footer-star" aria-hidden="true">✦</span></footer>
+    </div>
+  </div>
+
+  <dialog id="app-dialog" class="app-dialog" aria-labelledby="dialog-title"><div id="dialog-content"></div></dialog>
+  <?!= include_('Client'); ?>
+</body>
+</html>

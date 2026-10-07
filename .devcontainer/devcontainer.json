@@ -1,0 +1,7 @@
+{
+  "name": "Arkham RPG Companion",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-24-bookworm",
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm ci && npm run check",
+  "portsAttributes": { "3000": { "label": "Arkham development server", "onAutoForward": "notify" } }
+}
