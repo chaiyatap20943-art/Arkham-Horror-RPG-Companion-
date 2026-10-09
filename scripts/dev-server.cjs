@@ -25,14 +25,14 @@ const server = http.createServer(async (req, res) => {
     if (!allowedHosts.has(req.headers.host)) return json(res, { ok: false, error: { code: 'FORBIDDEN', message: 'Unrecognized development host.' } }, 403);
     const url = new URL(req.url, `http://${req.headers.host}`);
     res.setHeader('Referrer-Policy', 'no-referrer');
-    if (req.method === 'GET' && url.pathname === '/health') return json(res, { status: 'ok', workflow: 'foundation', googleConfigured: current.auth.publicConfig().configured });
+    if (req.method === 'GET' && url.pathname === '/health') return json(res, { status: 'ok', workflow: 'full-companion', googleConfigured: current.auth.publicConfig().configured });
     if (req.method === 'POST' && url.pathname === '/api') {
       if (req.headers.origin && !allowedOrigins.has(req.headers.origin)) return json(res, { ok: false, error: { code: 'FORBIDDEN', message: 'Unrecognized request origin.' } }, 403);
       if (!String(req.headers['content-type'] || '').startsWith('application/json')) return json(res, { ok: false, error: { code: 'VALIDATION', message: 'Expected JSON.' } }, 415);
       let body = '';
       for await (const chunk of req) {
         body += chunk;
-        if (body.length > 30000) return json(res, { ok: false, error: { code: 'VALIDATION', message: 'Request is too large.' } }, 413);
+        if (body.length > 4000000) return json(res, { ok: false, error: { code: 'VALIDATION', message: 'Request is too large.' } }, 413);
       }
       let request;
       try { request = JSON.parse(body); } catch (_) { return json(res, { ok: false, error: { code: 'VALIDATION', message: 'Invalid JSON.' } }, 400); }

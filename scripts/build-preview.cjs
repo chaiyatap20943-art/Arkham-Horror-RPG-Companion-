@@ -11,7 +11,7 @@ function buildPreview(outputPath = defaultOutput) {
   const clientRoot = path.join(root, 'src/client');
   let html = fs.readFileSync(path.join(clientRoot, 'Index.html'), 'utf8');
   html = html.replace(/<\?!=\s*include_\('([^']+)'\);?\s*\?>/g, (_, name) => {
-    if (!['Styles', 'Client'].includes(name)) throw new Error('Unexpected client include.');
+    if (!['Styles', 'Client', 'Features'].includes(name)) throw new Error('Unexpected client include.');
     return fs.readFileSync(path.join(clientRoot, `${name}.html`), 'utf8');
   });
   if (html.includes('<?')) throw new Error('Unresolved Apps Script template.');

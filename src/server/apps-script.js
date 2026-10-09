@@ -1,6 +1,6 @@
 /* Only doGet and api are remotely callable. Helpers end in _. */
 function include_(name) {
-  if (['Styles', 'Client'].indexOf(name) < 0) throw new Error('Unknown template.');
+  if (['Styles', 'Client', 'Features'].indexOf(name) < 0) throw new Error('Unknown template.');
   return HtmlService.createHtmlOutputFromFile(name).getContent();
 }
 
@@ -18,7 +18,7 @@ function callbackHtml_(result) {
     'if(result.ticket){document.getElementById("ticket").textContent=result.ticket;const b=document.getElementById("copy");b.hidden=false;b.onclick=()=>navigator.clipboard.writeText(result.ticket).then(()=>b.textContent="Copied").catch(()=>b.textContent="Select and copy the ticket above");' +
     '}' +
     '</script></html>';
-  return HtmlService.createHtmlOutput(html).setTitle('Arkham · Sign-in');
+  return HtmlService.createHtmlOutput(html).setTitle('Arkham · Sign-in').addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function doGet(e) {
@@ -27,13 +27,14 @@ function doGet(e) {
     try { return callbackHtml_(runtime_().auth.callback(params)); }
     catch (_) { return callbackHtml_({ error: 'Sign-in could not be completed. Return to the original tab and try again.' }); }
   }
-  return HtmlService.createTemplateFromFile('Index').evaluate().setTitle('Arkham · Campaign Companion');
+  return HtmlService.createTemplateFromFile('Index').evaluate().setTitle('Arkham · Campaign Companion').addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function api(request) {
   var requestId = request && typeof request.requestId === 'string' && /^[A-Za-z0-9._-]{1,128}$/.test(request.requestId) ? request.requestId : randomId_();
   try {
-    if (!request || typeof request !== 'object' || JSON.stringify(request).length > 30000) {
+    var maximum = request && request.operation === 'uploadMaterial' ? 1100000 : request && request.operation === 'restoreCampaign' ? 4000000 : request && request.operation === 'importEntities' ? 600000 : 30000;
+    if (!request || typeof request !== 'object' || Array.isArray(request) || JSON.stringify(request).length > maximum) {
       throw Object.assign(new Error('Invalid request.'), { code: 'VALIDATION' });
     }
     if (request.operation === 'publicConfig') {
@@ -56,7 +57,7 @@ function api(request) {
     }
     return { ok: true, requestId: requestId, data: data };
   } catch (error) {
-    var known = /^(AUTH_[A-Z_]+|UNAUTHENTICATED|AUTH_REQUIRED|FORBIDDEN|NOT_FOUND|VALIDATION|CONFLICT|IDEMPOTENCY_CONFLICT|CONFIGURATION|RATE_LIMITED)$/;
+    var known = /^(AUTH_[A-Z_]+|UNAUTHENTICATED|AUTH_REQUIRED|FORBIDDEN|NOT_FOUND|VALIDATION|CONFLICT|IDEMPOTENCY_CONFLICT|CONFIGURATION|RATE_LIMITED|SOURCE_UNAVAILABLE|RULE_NOT_VERIFIED)$/;
     var code = known.test(error.code || '') ? error.code : 'SERVER_ERROR';
     if (code === 'UNAUTHENTICATED') code = 'AUTH_REQUIRED';
     return { ok: false, requestId: requestId, error: { code: code, message: code === 'SERVER_ERROR' ? 'The request could not be completed. Try again.' : error.message } };
@@ -77,7 +78,11 @@ function randomId_() { return Utilities.getUuid().replace(/-/g, ''); }
 
 function runtime_() {
   var store = sheetsStore_();
-  var service = Arkham.createService({ store: store, now: function () { return new Date().toISOString(); }, id: randomId_, digest: digest_ });
+  var create = typeof Arkham.createFullService === 'function' ? Arkham.createFullService : Arkham.createService;
+  var service = create({ store: store, now: function () { return new Date().toISOString(); }, id: randomId_, digest: digest_,
+    d6: function () { return Math.floor(Math.random() * 6) + 1; },
+    ai: typeof googleAI_ === 'function' ? googleAI_ : undefined,
+    files: typeof googleFiles_ === 'function' ? googleFiles_ : undefined });
   var auth = Arkham.createAuth({ config: authConfig_(), vault: scriptVault_(), nowMs: Date.now, id: randomId_, digest: digest_, service: service, http: googleHttp_ });
   return { service: service, auth: auth };
 }
@@ -177,5 +182,89 @@ function sheetsStore_() {
 // Run from the Apps Script editor once. It creates missing tables only.
 // The trailing underscore prevents invocation through google.script.run.
 function initializeDatabase_() {
-  sheetsStore_().transact(function () { return true; });
+  sheetsStore_().transact(function (state) {
+    if (typeof Arkham.seedCatalogForCampaign === 'function') Object.keys(state.campaigns).forEach(function (id) {
+      Arkham.seedCatalogForCampaign(state, state.campaigns[id], new Date().toISOString());
+      if (typeof Arkham.seedGMCatalogForCampaign === 'function') Arkham.seedGMCatalogForCampaign(state, state.campaigns[id], new Date().toISOString());
+    });
+    return true;
+  });
+}
+
+// Run manually as the installation owner in the Apps Script editor.
+// Private helper: no RPC operation exposes configuration or database diagnostics.
+// Reads only configuration, metadata and table headers. Never initializes data.
+function checkInstallation_() {
+  var required = ['DATABASE_ID', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'APP_URL'];
+  var properties = PropertiesService.getScriptProperties();
+  var values = {};
+  var report = {
+    ready: false,
+    missingSettings: [],
+    invalidSettings: [],
+    sheetsServiceEnabled: !!(typeof Sheets !== 'undefined' && Sheets && Sheets.Spreadsheets &&
+      typeof Sheets.Spreadsheets.get === 'function' && Sheets.Spreadsheets.Values &&
+      typeof Sheets.Spreadsheets.Values.batchGet === 'function'),
+    database: { status: 'NOT_CHECKED', tables: [], missingTables: [], incompatibleTables: [] },
+    actions: []
+  };
+  var validators = {
+    DATABASE_ID: function (value) { return /^[A-Za-z0-9_-]{1,256}$/.test(value); },
+    GOOGLE_CLIENT_ID: function (value) { return /^\d+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(value); },
+    GOOGLE_CLIENT_SECRET: function (value) { return value === value.trim() && !/[\u0000-\u001f\u007f]/.test(value); },
+    APP_URL: function (value) { return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(value); }
+  };
+  required.forEach(function (key) {
+    var value = properties.getProperty(key);
+    if (typeof value !== 'string' || !value.trim()) report.missingSettings.push(key);
+    else if (!validators[key](value)) report.invalidSettings.push(key);
+    else values[key] = value;
+  });
+  if (report.missingSettings.length) {
+    report.actions.push('Set the missing key names listed in Script Properties. Keep their values private.');
+  }
+  if (report.invalidSettings.length) {
+    report.actions.push('Review the invalid key names: DATABASE_ID must be the spreadsheet ID; GOOGLE_CLIENT_ID must identify a Web application OAuth client; APP_URL must be the published /exec URL.');
+  }
+  if (!report.sheetsServiceEnabled) {
+    report.actions.push('Enable the Google Sheets advanced service in Apps Script Services and the Google Sheets API in the linked Cloud project.');
+  }
+  if (values.DATABASE_ID && report.sheetsServiceEnabled) {
+    try {
+      var expected = Object.keys(Arkham.tables).map(function (key) { return Arkham.tables[key]; });
+      var metadata = Sheets.Spreadsheets.get(values.DATABASE_ID, { fields: 'sheets(properties(title))' });
+      var present = (metadata.sheets || []).map(function (sheet) { return sheet.properties.title; });
+      report.database.tables = expected.filter(function (name) { return present.indexOf(name) !== -1; });
+      report.database.missingTables = expected.filter(function (name) { return present.indexOf(name) === -1; });
+      if (report.database.tables.length) {
+        var ranges = report.database.tables.map(function (name) { return "'" + name + "'!A1:E1"; });
+        var headers = ['RecordKey', 'CreatedAt', 'UpdatedAt', 'Version', 'DataJSON'];
+        var batch = Sheets.Spreadsheets.Values.batchGet(values.DATABASE_ID, { ranges: ranges, valueRenderOption: 'UNFORMATTED_VALUE' });
+        report.database.tables.forEach(function (name, index) {
+          var rows = batch.valueRanges && batch.valueRanges[index] && batch.valueRanges[index].values;
+          if (!rows || JSON.stringify(rows[0]) !== JSON.stringify(headers)) report.database.incompatibleTables.push(name);
+        });
+      }
+      if (report.database.incompatibleTables.length) {
+        report.database.status = 'SCHEMA_MISMATCH';
+        report.actions.push('Back up the database and review the listed table headers against the documented schema. Resolve the mismatch before initialization or app use.');
+      } else if (report.database.missingTables.length) {
+        report.database.status = 'NEEDS_INITIALIZATION';
+        report.actions.push('Run initializeDatabase_ once from the Apps Script editor to add missing application tables, then rerun checkInstallation_.');
+      } else {
+        report.database.status = 'READY';
+      }
+    } catch (_) {
+      report.database.status = 'UNAVAILABLE';
+      report.actions.push('Check DATABASE_ID, spreadsheet access for the installation owner, Apps Script authorization, and whether the Google Sheets API is enabled.');
+    }
+  }
+  report.ready = !report.missingSettings.length && !report.invalidSettings.length &&
+    report.sheetsServiceEnabled && report.database.status === 'READY';
+  if (report.ready) {
+    report.actions.push('Installation checks passed. Test sign-in using two real Google accounts on the published app to verify OAuth and account isolation.');
+  }
+  // Only the explicitly constructed report is logged; never values or raw errors.
+  console.log(JSON.stringify(report));
+  return report;
 }

@@ -11,7 +11,7 @@ delete process.env.GOOGLE_CLIENT_ID;
 delete process.env.GOOGLE_CLIENT_SECRET;
 const current = runtime({ directory });
 const users = {};
-for (const [label, email] of [['A', 'gm@example.com'], ['B', 'player@example.com'], ['C', 'stranger@example.com']]) {
+for (const [label, email] of [['A', 'gm@example.com'], ['B', 'player@example.com'], ['C', 'stranger@example.com'], ['D', 'playerd@example.com'], ['E', 'playere@example.com']]) {
   users[label] = current.service.upsertUser({ sub: `browser-${label}`, email, emailVerified: true, name: `Account ${label}` });
   const token = `browser-test-session-${label}`.padEnd(64, label);
   fileVault(path.join(directory, 'private-auth.json')).set(`auth:session:${crypto.createHash('sha256').update(token).digest('hex')}`, { userId: users[label].id, expiresAt: Date.now() + 3600000 });

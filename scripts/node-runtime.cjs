@@ -7,7 +7,8 @@ const { spawnSync } = require('node:child_process');
 
 function loadModules() {
   const context = vm.createContext({ Date, JSON, Math, Object, Array, String, Number, Boolean, RegExp, Error, encodeURIComponent, decodeURIComponent, isFinite });
-  for (const name of ['store', 'domain', 'auth']) {
+  for (const name of ['store', 'domain', 'catalog', 'gm-catalog', 'investigators', 'play', 'story', 'library', 'features', 'auth']) {
+    if (!fs.existsSync(path.join(__dirname, '../src/server', `${name}.js`))) continue;
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/server', `${name}.js`), 'utf8'), context, { filename: `${name}.js` });
   }
   return context.Arkham;
@@ -81,7 +82,8 @@ function runtime(options = {}) {
   const store = options.store || fileStore(path.join(directory, 'database.json'), A.emptyState());
   const digest = text => crypto.createHash('sha256').update(text).digest('hex');
   const id = () => crypto.randomBytes(24).toString('hex');
-  const service = A.createService({ store, now: () => new Date().toISOString(), id, digest });
+  const service = (A.createFullService || A.createService)({ store, now: options.now || (() => new Date().toISOString()), id, digest,
+    d6: options.d6 || (() => crypto.randomInt(1, 7)), ai: options.ai, files: options.files });
   const auth = A.createAuth({
     config: options.config || { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, redirectUri: process.env.APP_URL || 'http://localhost:3000/oauth/callback', mode: 'development' },
     vault: options.vault || fileVault(path.join(directory, 'private-auth.json')),
@@ -93,7 +95,8 @@ function runtime(options = {}) {
 function dispatch(current, request) {
   const requestId = request && typeof request.requestId === 'string' && /^[A-Za-z0-9._-]{1,128}$/.test(request.requestId) ? request.requestId : crypto.randomUUID();
   try {
-    if (!request || typeof request !== 'object' || Array.isArray(request) || JSON.stringify(request).length > 30000) {
+    const maximum = request && request.operation === 'uploadMaterial' ? 1100000 : request && request.operation === 'restoreCampaign' ? 4000000 : request && request.operation === 'importEntities' ? 600000 : 30000;
+    if (!request || typeof request !== 'object' || Array.isArray(request) || JSON.stringify(request).length > maximum) {
       throw Object.assign(new Error('Invalid request.'), { code: 'VALIDATION' });
     }
     let data;
@@ -110,7 +113,7 @@ function dispatch(current, request) {
     }
     return { ok: true, requestId, data };
   } catch (error) {
-    const publicCodes = /^(AUTH_[A-Z_]+|UNAUTHENTICATED|AUTH_REQUIRED|FORBIDDEN|NOT_FOUND|VALIDATION|CONFLICT|IDEMPOTENCY_CONFLICT|CONFIGURATION|RATE_LIMITED)$/;
+    const publicCodes = /^(AUTH_[A-Z_]+|UNAUTHENTICATED|AUTH_REQUIRED|FORBIDDEN|NOT_FOUND|VALIDATION|CONFLICT|IDEMPOTENCY_CONFLICT|CONFIGURATION|RATE_LIMITED|SOURCE_UNAVAILABLE|RULE_NOT_VERIFIED)$/;
     let code = publicCodes.test(error.code || '') ? error.code : 'SERVER_ERROR';
     if (code === 'UNAUTHENTICATED') code = 'AUTH_REQUIRED';
     return { ok: false, requestId, error: { code, message: code === 'SERVER_ERROR' ? 'The request could not be completed. Try again.' : error.message } };

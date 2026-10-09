@@ -1,99 +1,70 @@
-# Setup: Foundation milestone
+# Development and Google installation
 
-เอกสารนี้แยกการทดสอบใน Codespaces/Codex ออกจาก Google runtime จริง ต้องทดสอบด้วย Google Account สองบัญชีก่อนยอมรับ Phase 1. ไม่มีการ deploy อัตโนมัติ
+For installation without Node on Mac, use the complete [Thai Google Apps Script guide](../google-apps-script/README_TH.md) and `google-apps-script/INSTALL.html`. It names the six required files, private Google resources, OAuth redirect, Script Properties, scopes, initialization and live acceptance procedure.
 
-## 1. Local/Codespaces setup
+The current source includes all companion system workflows. The user's explicit full-code request superseded the previous Foundation-only development gate. Google runtime acceptance remains pending; see [current validation](full-build-validation.md).
 
-From the existing repository checkout:
+## Local development
+
+From the existing checkout with Node 24:
 
 ```bash
-npm ci
+npm ci --ignore-scripts
 npm run check
 npm run dev
 ```
 
-Dependencies are pinned in `package-lock.json`; use Node 24. `.devcontainer/devcontainer.json` supplies the Node 24 development image and runs installation/checks. In environments that restrict the default home directory, `.npmrc` keeps npm's cache in the ignored `.cache/npm/` directory inside the checkout.
+Dependencies are pinned; `.npmrc` keeps npm cache inside ignored `.cache/npm/`. `build` writes ignored `dist/` only. Do not create a second checkout/worktree for routine cloud startup. Preserve existing user changes.
 
-Expected result: the real signed-out landing screen, with Google login requiring configuration. The separate design preview has sample data and is read only. No account, database, or session is fabricated by `npm run dev`.
+The real signed-out screen appears without Google credentials. The separate preview is explicitly sample/read-only. No product endpoint fabricates a user. Optional genuine local login uses a separate development OAuth Web client and ignored `.env`; register the exact `APP_URL`, normally `http://localhost:3000/oauth/callback`. A Codespaces browser needs its forwarded HTTPS callback URL. Local persistence supports one Node process; Google-specific AI/file adapters are production Apps Script helpers.
 
-Optional real local login: copy `.env.example` to `.env`, fill a **separate development web OAuth client** ID/secret, and register `APP_URL` exactly. For a locally opened browser use `http://localhost:3000/oauth/callback`. Codespaces requires the actual forwarded HTTPS `/oauth/callback` URL; Google redirects the browser, not the remote machine's loopback. The server accepts that configured origin/host. Keep the port private and the secrets untracked. `.local/` stores private local development records; it is never uploaded to Google.
+## Generate the paste-ready package
 
-## 2. Create the production Google resources
+During an authorized source change:
 
-1. As the installation owner, create a private Google Sheet and a standalone Apps Script project. Do not share the Sheet or a parent folder with campaign players. Copy the spreadsheet ID from its URL and the script ID from Project Settings; these IDs are configuration, not credentials.
-2. In Apps Script **Services**, enable the **Google Sheets API v4** advanced service. It is also declared in the supplied manifest. If using a standard Google Cloud project, enable the Google Sheets API there too. The Sheets adapter uses one `spreadsheets.batchUpdate` call to commit business records, audit, and retry receipt together.
-3. Create a Google Cloud project and configure **Google Auth Platform** branding/audience/contact details. Use an external audience for personal Google accounts; add the two test accounts while the app is in testing mode. Create an OAuth client of type **Web application** for the companion's login. This client is separate from any desktop client used by clasp.
-4. Build and inspect the generated Apps Script files with `npm run build`.
-5. Choose either upload method below. The CLI instructions are user actions; this build has not run login, upload, or deployment commands.
+```bash
+npm run release
+npm run preview
+```
 
-### Upload option A: Google editor
+The first command combines server modules into `google-apps-script/Code.gs`, copies the four HTML files and manifest, and creates the offline copy-button installer. Code in `src/` remains canonical. Do not upload both combined Code.gs and separate server modules into the same Google project.
 
-Create matching script files for the `.gs` files in `dist/apps-script/`, and matching HTML files `Index`, `Styles`, `Client`. Enable viewing the manifest in Project Settings, then use `dist/apps-script/appsscript.json`. Do not copy `scripts/`, tests, the PDF, or any `.env` file into Apps Script.
+## Optional clasp upload
 
-### Upload option B: clasp
-
-Enable the [Apps Script API](https://script.google.com/home/usersettings) for the installation owner. The pinned clasp 3.4.1 CLI is installed locally.
+Manual editor installation requires no CLI. For developers who choose clasp, build the separate module output under `dist/apps-script/`, create the Google project, and enable the [Apps Script API](https://script.google.com/home/usersettings) for its owner:
 
 ```bash
 npm run clasp -- login --no-localhost
 npm run configure -- YOUR_APPS_SCRIPT_PROJECT_ID
 npm run build
-# Review the target and generated files before uploading:
 npm run clasp -- show-file-status
-# Upload only when you intend to change that Apps Script project:
 npm run clasp -- push
 ```
 
-If your account requires custom clasp credentials, use the current clasp documentation's desktop-client procedure. Keep downloaded credential JSON outside the repository. Clasp authentication is a developer credential and is unrelated to the web OAuth client used by players. Do not paste credentials, authorization codes, or token output into chat. Revoke developer access from your Google Account's third-party connection settings when no longer needed.
+These are user/developer actions, not commands performed during this delivery. Confirm the target before upload. `.clasp.json` is ignored and the helper refuses to overwrite an existing target. Keep developer credentials outside Git and separate from the players' OAuth Web client. The pinned optional clasp has a recorded development dependency advisory; the Google editor path avoids it.
 
-The configuration helper writes an ignored `.clasp.json` with `rootDir: dist/apps-script`; it refuses to overwrite an existing target. It does not upload anything. Confirm the actual project ID before using `push`.
+## Production properties and scopes
 
-## 3. Deploy and add private configuration
+Required: `DATABASE_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `APP_URL`. Optional: `GEMINI_API_KEY`, `GEMINI_MODEL`. `initializePrivateStorage_` creates `PRIVATE_FOLDER_ID` for app-created private images. No secret values belong in files, chat or browser responses.
 
-1. Deploy as a web app, **execute as the installation owner**, with access permitting the intended test accounts. For personal accounts this may require **Anyone** at the web-app transport layer; domain data remains protected by the companion's Google login and membership checks. Workspace policy may forbid this access setting, which is a deployment blocker to resolve with the owner rather than weakening identity checks.
-2. Copy the published web-app URL ending in `/exec`; use a stable deployment, not the editor `/dev` test URL.
-3. In the Google web OAuth client's Authorized redirect URIs, register that **exact `/exec` URL**. The web app's `doGet` handles the callback. Origin/redirect restrictions and actual HTML Service behavior must be validated at this URL.
-4. Enter these Script Properties in Apps Script Project Settings:
+The supplied manifest uses Sheets v4, Drive v3, V8 and Asia/Bangkok; scopes are spreadsheets, `drive.file` and external HTTP. Login separately requests OpenID/email/profile and establishes identity from server-verified Google UserInfo. The Drive scope covers app-created/authorized files, not every manually uploaded file in the owner's Drive. A full PDF ID is optional source metadata and does not grant player access.
 
-| Name | Meaning |
-| --- | --- |
-| `DATABASE_ID` | Private database spreadsheet ID. |
-| `GOOGLE_CLIENT_ID` | Production web OAuth client ID. |
-| `GOOGLE_CLIENT_SECRET` | Production web OAuth client secret; enter it securely here only. |
-| `APP_URL` | Exact `/exec` URL registered as the OAuth redirect. |
+Deploy **Execute as Me**, with transport access permitting intended accounts and OAuth callbacks, register the exact stable `/exec` URL, then run `initializeDatabase_`, `initializePrivateStorage_`, `checkInstallation_` as the owner. The HTMLService outputs set the viewport through `addMetaTag`; login polling does not depend on iframe-to-popup messaging. Source save alone does not update the deployed version.
 
-5. From the Apps Script editor, run `initializeDatabase_` as the owner and approve the manifest's Sheets and external-request scopes. It creates missing tables; a second run leaves existing records alone. It rejects an incompatible named table instead of silently migrating it. No Drive/Gemini credentials are needed at this stage.
-6. Open the deployed app, choose Google login, and complete consent in the popup. The original tab polls a verifier-bound state; it does not depend on cross-origin popup messages. If necessary use the one-time ticket fallback. Then perform the checklist below.
+## Required live acceptance
 
-## 4. Live acceptance gate — not executed yet
+Use real accounts A/B/C in separate browser profiles. Verify login identity/expiry, forged-session denial, campaign isolation, email-bound invitations, owner-only role elevation, immediate membership revocation, investigator ownership/approval, persistent dice/XP actions, selected reveal across API/search/AI/files/history, bilingual state independence, failed/retried writes and immutable continuing sessions. Exercise actual Sheets/Drive permissions and Gemini failure handling. Record quotas/performance from representative campaigns.
 
-Use accounts A, B, and an unrelated C in separate browser profiles:
+Before changing an installation, export owner campaign JSON and copy the private database Sheet. Keep Drive images separately. Restore preserves current permission decisions and existing file bindings; it refuses edited existing immutable history and ignores untrusted unknown retry receipts. Close old tabs and sign in again after restoration. Revert a bad code update using the previous Apps Script deployment version and a tested private database backup.
 
-1. A/B sign in: distinct stable identities and verified email. Refresh and sign in again: the same user IDs remain.
-2. Signed-out and forged/expired sessions cannot read campaigns. Logout invalidates that session.
-3. A creates a campaign and becomes owner/GM. A invites B's verified email. B sees/accepts; C cannot redeem B's invite or access the campaign by ID.
-4. Player B cannot alter owner/role/private notes. Player responses do not contain the notes, including nested payloads. An owner can appoint Co-GM; Co-GM cannot promote themself.
-5. Remove B and retry with B's existing session: access is immediately denied.
-6. Change the same campaign from two tabs: a stale version fails visibly. Retry the same request ID: only one campaign/invitation is created.
-7. Switch English/Thai and reload: campaign IDs and content remain unchanged.
-8. Verify writes in the private Sheet and confirm test players have no direct database access. Test consent cancellation, popup blocking, lost network, callback reload, and timeout.
-
-Record these results before accepting the foundation phase. Google setup values or a successful local test alone do not establish live readiness.
-
-## Recovery and rollback
-
-Back up the private database using the owner's Google Sheets copy/export tools before changing code. Keep access private; copies contain user data and GM secrets. The schema currently uses six managed tabs with JSON records. Do not edit their record keys or cells directly while the app is running. No destructive migration is implemented. If an update fails, stop writes, restore the previous Apps Script deployment version, and use a private database backup whose IDs and membership records are intact; re-test the A/B/C permission gate.
-
-The app's own export/restore interface is a later roadmap feature, so this manual recovery procedure is not acceptance of AT-20. To revoke all existing app sessions administratively, delete only Script Properties named `private:auth:session:*`; retain configuration properties. Changing a player's membership should use the app so the audit record is preserved.
-
-## References and current verification limits
-
-The pinned clasp package's README and CLI help, Google-maintained OAuth client source, and Apps Script OAuth2 examples were checked during implementation. Direct `developers.google.com` requests were blocked by this environment's egress policy. Its domain addition is saved in the environment draft, preserving existing network presets; review/save and publish that configuration to make it available to future tasks. The links below remain authoritative for live platform setup:
+## Platform references
 
 - [Apps Script web apps](https://developers.google.com/apps-script/guides/web)
-- [Sheets atomic batch updates](https://developers.google.com/workspace/sheets/api/guides/batchupdate)
-- [Google web OAuth](https://developers.google.com/identity/protocols/oauth2/web-server)
-- [clasp 3.4.1](https://www.npmjs.com/package/@google/clasp/v/3.4.1)
+- [HTML Service restrictions](https://developers.google.com/apps-script/guides/html/restrictions)
+- [HtmlOutput metadata](https://developers.google.com/apps-script/reference/html/html-output)
+- [Sheets atomic batches](https://developers.google.com/workspace/sheets/api/guides/batchupdate)
+- [Google Web OAuth](https://developers.google.com/identity/protocols/oauth2/web-server)
+- [Drive file scope](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
 - [Apps Script quotas](https://developers.google.com/apps-script/guides/services/quotas)
 
-No quota/performance numbers are guaranteed. Validate current Google console settings and quotas in your own account before inviting players.
+Current official web-app/HtmlOutput references were reachable and checked in this implementation. Historical blocked-network observations in earlier validation describe that earlier machine state.

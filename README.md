@@ -1,64 +1,57 @@
-# Arkham Horror RPG Campaign Companion
+# Arkham Horror RPG Companion
 
-Private campaign companion built with **HTML/CSS/vanilla JavaScript + Google Apps Script + Google Sheets**. English/Thai UI uses the same canonical data. No corebook PDF, extracted full-book text, or credentials are included.
+Private English/Thai companion built with HTML, CSS, vanilla JavaScript, Google Apps Script, Sheets and private Drive storage. Gemini powers optional assistant, translation and OCR features. Version **0.2.0** supplies the full application source and a paste-ready Apps Script package.
 
-**สถานะ: Foundation milestone — ยังไม่ใช่ MVP ที่เล่นเกมได้ครบ และยังไม่ผ่านการทดสอบ Google deployment จริง**
+**ติดตั้งบน Google Apps Script ได้โดยไม่ต้องติดตั้ง Node บน Mac:** ดาวน์โหลด repository ZIP → เปิด `google-apps-script/INSTALL.html` ด้วย Safari → คัดลอก Code/HTML ไป Apps Script → ทำตาม [คู่มือติดตั้งภาษาไทย](google-apps-script/README_TH.md).
 
-This first build implements the foundation and a campaign workflow for testing its permission infrastructure: Google authorization-code/PKCE authentication, hashed application sessions, campaigns, in-app email-bound invitations, owner/GM/Co-GM/Player permissions, language preferences, audit records, optimistic versions, and atomic retry-safe writes. Campaign code is preparatory work; later roadmap gates have not been accepted. Character creation, sessions, dice, injuries, equipment, advancement, rule search, Gemini, and scanning remain on the [roadmap](docs/roadmap.md).
+## Application systems
 
-The original [Thai master brief](docs/master-brief-th.txt) is retained for future development. The [requirements review](docs/requirements-review.md) documents the architecture and decisions. The [corebook verification register](docs/rules-verification.md) records source pages and exceptions; those verified mechanics are **not implemented** in this foundation.
+- Verified Google login, campaigns, email-bound invitations, owner/GM/Co-GM/Player permissions.
+- Six-step investigator creation, saved drafts, server validation, GM approval, digital sheets, equipment, XP awards/purchases/reversals and audited corrections.
+- Sessions and attendance, narrative scenes and structured play, server dice and resource actions, immutable snapshots and continuing investigator state.
+- GM scenes, NPCs, enemies, locations, clues, handouts, selected-player reveal and journals.
+- Source-linked Corebook catalog, bilingual search, structured import/review, grounded Gemini answers and translation/narration.
+- Private image scanner, separate OCR draft and reviewed text, authorized image retrieval, owner campaign export/restore.
 
-## Open the interface without installation
+Catalog verification and ability automation are different. The tested Dynamic Pool System handles core dice, pool, horror, trauma/injury results, advancement and selected personality effects. Other ability effects use explicit **GM_ADJUDICATED** actions with sources and reasons. Heavy Blow timing, limb-dependent actions, Dire deadlines and narrative decisions require GM judgment. See [the build and validation record](docs/full-build-validation.md).
 
-Extract the project ZIP and open `preview/arkham-preview.html` in Safari or Chrome. This self-contained file starts in Thai and displays fictional sample campaigns with an explicit offline/read-only notice. It requires no Node, Google configuration, or internet connection. Login, mutations, and network requests are disabled. Storage restrictions do not prevent it from opening. See [the Mac guide](docs/macos-quickstart-th.md).
+**Live Google acceptance is pending.** Local and browser tests use isolated provider/storage/session fixtures; they do not establish real Google consent, Apps Script deployment, Sheets/Drive access, Gemini availability or quotas. The application has not been uploaded or deployed into the user's Google account.
 
-The shared client source remains canonical. Refresh the included standalone example after client changes with `npm run preview`.
+## Install the real application
 
-## Develop and validate
+Use [google-apps-script/README_TH.md](google-apps-script/README_TH.md). The package contains `Code.gs`, HTML `Index`, `Styles`, `Client`, `Features`, and `appsscript.json`. `INSTALL.html` contains all six files with copy/select buttons; it is an installation aid, not the hosted application.
 
-Use Node 24 (the current cloud machine has 24.19.0). Open the existing checkout; cloud tasks are already isolated, so no additional worktree is needed.
+You need a private Sheet, an Apps Script project and a Google OAuth Web client. Secrets belong only in Script Properties. Enable Sheets v4 and Drive v3; run the owner initialization/diagnostics helpers and deploy a web app executing as the owner. Gemini configuration is optional.
+
+Opening `preview/arkham-preview.html` displays fictional, read-only sample campaigns without Node or Google setup. It cannot log in, save data or exercise the real application. The [Mac guide](docs/macos-quickstart-th.md) distinguishes this preview from installation.
+
+## Develop and verify
+
+Use Node 24 (supported Node 22–24):
 
 ```bash
-npm ci
+npm ci --ignore-scripts
 npm run check
 npm run dev
 ```
 
-`dev` builds and starts the local development server on port 3000. Without Google configuration it shows the actual signed-out/setup state. **Explore the interface** opens a clearly labeled, read-only design preview with sample data. It never authenticates a sample user or writes sample campaigns to the database.
-
-Local development uses an ignored, private `.local/` JSON store. Production uses the Sheets adapter. An optional local Google client can be configured from `.env.example`; see [authentication](docs/authentication.md). For Codespaces, use the forwarded HTTPS callback URL as `APP_URL` and register that exact callback in a separate development OAuth client. Never treat the Node adapter as the Apps Script hosting environment.
+`build` generates ignored `dist/` only. Local development stores private data in ignored `.local/`; production uses Sheets. Real local login uses a separate OAuth Web client in ignored `.env`. Google-specific file and AI adapters run on Apps Script; local development reports the optional integrations unavailable unless tests explicitly supply adapters.
 
 ```bash
-# Browser checks: install Chromium using Playwright, or use an existing browser.
-npx playwright install chromium
-npm run test:browser
-# This cloud machine already has Chromium:
 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:browser
+# During an authorized release change:
+npm run release
+npm run preview
 ```
 
-Browser tests use isolated test accounts and private session fixtures, not real Google login. Backend tests replace Google transport and the Sheets network service with test doubles. See [validation](docs/validation.md) for the distinction and actual results.
+Browser tests require port 3000 free and start their own isolated fixture server. `release` regenerates the tracked paste-ready package from `src/`; `preview` regenerates the offline example. Never hand-edit generated code. For the optional clasp upload path, see [setup](docs/setup.md).
 
-## Configure Google
+## Data and recovery
 
-Follow [the setup guide](docs/setup.md). You need an Apps Script project, a private Sheets database, and a Google web OAuth client. Enter its secret **only** in Script Properties. Source delivery now uses the user-authorized GitHub `main` branch. No Google application upload or deployment has been performed.
+There are 22 managed Sheets tabs using typed JSON records and formula-safe text cells. Mutations commit domain state, audit and retry receipt in one atomic Sheets batch. Versions detect stale updates; current membership/object permissions are rechecked on every request and replay. AI/Drive prepare work runs outside the mutation lock, with source/permission freshness checks before committing. Scanner uploads have compensation and private orphan recovery.
 
-Build output is ignored under `dist/apps-script/`; upload it only after reviewing the source and configuring the intended target. The current build requests Sheets and external-HTTP scopes only. Drive file features and Gemini integration have not been added, so their permissions and API keys are unnecessary for this milestone.
+Backups are owner-only, campaign-scoped JSON. They contain private campaign data and preserve identifiers/history, while restoration preserves current permissions and checks existing private file bindings. Unknown imported request receipts are ignored. Drive image bytes, credentials and authentication sessions are excluded; keep private Sheets/Drive backups separately. See [schema](docs/schema.md) and [recovery instructions](google-apps-script/README_TH.md).
 
-## Project files
+No full Corebook PDF, extracted full-book text, artwork or secret values are distributed. Catalog entries contain verified facts, short original summaries and page citations. Structured imports and scans remain reviewable sources; they cannot alter the frozen official mechanics.
 
-| Path | Purpose |
-| --- | --- |
-| `src/client/` | Bilingual, responsive interface and Google/Node RPC adapter. |
-| `src/server/auth.js` | Real Google code exchange, UserInfo verification, PKCE polling, sessions. |
-| `src/server/domain.js` | Campaign, invitation, authorization, version, audit, and retry rules. |
-| `src/server/store.js` | Portable record representation and safe Sheets string cells. |
-| `src/server/apps-script.js` | Web app entry points and atomic Sheets/private-vault adapters. |
-| `src/appsscript.json` | Explicit runtime and permissions. |
-| `scripts/` | Build, development server, local persistence, and target configuration. |
-| `tests/` | Security/domain/storage/integration and browser acceptance checks. |
-| `docs/` | Review, rule sources, setup, schema, validation, and staged roadmap. |
-| `.devcontainer/` | Codespaces configuration; installs frozen dependencies and runs checks. |
-
-## Known limits
-
-Real Google consent, `/exec` callbacks, personal-account access, Apps Script scopes, and Sheets writes require a live deployment test. The first phase is not accepted until two separate Google accounts pass that gate. The app currently uses full-table reads and bounded record sizes; it is intended for a small private installation and needs pagination, quota measurements, and retention controls before larger datasets. Local JSON storage supports one Node server process only. External AI/file features are unavailable and do not affect this foundation.
+Full-table Sheets reads/writes favor small private campaigns. History/search pagination is implemented; indexing, retention and Google quota/load measurement remain release acceptance work. There are explicit bounded image/import/restore sizes. The recorded optional clasp development advisory is described in the [historical validation record](docs/validation.md).

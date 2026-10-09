@@ -337,6 +337,8 @@ Arkham.createService = function (dependencies) {
         };
         state.campaigns[campaign.id] = campaign;
         state.members[memberKey(campaign.id, user.id)] = membership;
+        if (typeof Arkham.seedCatalogForCampaign === 'function') Arkham.seedCatalogForCampaign(state, campaign, at);
+        if (typeof Arkham.seedGMCatalogForCampaign === 'function') Arkham.seedGMCatalogForCampaign(state, campaign, at);
         result = { campaign: clone(campaign) };
         target = campaign.id;
         campaignId = campaign.id;

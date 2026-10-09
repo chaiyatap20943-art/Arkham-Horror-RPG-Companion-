@@ -1,0 +1,702 @@
+<script>
+(() => {
+  'use strict';
+  const OFFLINE_PREVIEW = window.ARKHAM_OFFLINE_PREVIEW === true;
+
+  const dictionary = {
+    en: {
+      brandSubtitle: 'CAMPAIGN COMPANION', privatePlatform: 'A PRIVATE CAMPAIGN PLATFORM',
+      landingEyebrow: 'FOR THE STORIES THAT STAY WITH YOU', landingTitle: 'Every story\nleaves a trace.',
+      landingDescription: 'A home for your Arkham Horror RPG campaign. Bring your circle together, keep the secrets close, and prepare for the next chapter.',
+      googleSignIn: 'Continue with Google', loginPrivacy: 'Your Google account. Your private campaigns.',
+      checkingConfig: 'Checking environment…', checkingDescription: 'Preparing a secure connection.',
+      explorePreview: 'Explore the interface', sampleReadOnly: 'Sample campaigns · read only',
+      artQuote: 'Some doors are better\nopened together.', foundationEdition: 'CAMPAIGN EDITION',
+      independentNotice: 'An independent companion for Arkham Horror: The Roleplaying Game.',
+      noBookContent: 'Private sources. Rules with citations.',
+      previewBanner: 'Design preview · sample data · read only', backToSignIn: 'Back to sign-in →',
+      yourWorkspace: 'YOUR WORKSPACE', myCampaigns: 'My campaigns', invitations: 'Invitations',
+      nextChapters: 'CAMPAIGN TOOLS', investigators: 'Investigators', sessions: 'Sessions', campaignJournal: 'Story & journal', soon: 'SOON', rulebook: 'Rulebook', assistant: 'AI assistant', materials: 'Scanner & sources', tools: 'Export & restore',
+      editionCard: 'A place to gather.\nA story to remember.', googleAccount: 'Google account',
+      workspaceLabel: 'WORKSPACE', privateWorkspace: 'Private workspace', workspaceFooter: 'Every campaign is a world of its own.',
+      setupRequired: 'Google sign-in needs setup', setupDescription: 'Connect an Apps Script deployment and Google OAuth client to open your private workspace.',
+      setupGuide: 'View setup instructions', configError: 'Could not connect to the backend', configErrorDescription: 'Check the server connection, then try again.',
+      retry: 'Try again', signingIn: 'Opening Google sign-in…', waitingForGoogle: 'Waiting for Google sign-in',
+      completeInWindow: 'Continue in the sign-in window. This page will connect automatically.', cancelSignIn: 'Cancel sign-in',
+      loginReady: 'Secure sign-in is ready', loginReadyDescription: 'Only campaign members can access campaign data.',
+      ticketInstructions: 'Complete Google sign-in in the new window. If it cannot return automatically, paste the one-time handoff ticket shown there.',
+      ticketLabel: 'One-time handoff ticket', completeLogin: 'Finish sign-in', openSignInWindow: 'Open Google sign-in window →',
+      finishSigningIn: 'Completing sign-in…', loginFailed: 'Sign-in could not be completed. Please start again.',
+      loginTimeout: 'The sign-in window expired. Please start again.', loginExpired: 'Your session expired. Sign in again to continue.',
+      signOut: 'Sign out', signedOut: 'You have signed out.', previewProfile: 'Design preview',
+      welcomeEyebrow: 'YOUR STORIES, TOGETHER', campaignTitle: 'Your campaign begins here.',
+      campaignSubtitle: 'Gather your circle. Keep the thread. Make room for the unknown.',
+      createCampaign: 'New campaign', activeCampaigns: 'Active campaigns', campaignStatNote: 'Your private worlds',
+      memberSeats: 'Member seats', memberStatNote: 'Across your campaigns', pendingInvitations: 'Pending invitations', invitationStatNote: 'A place at the table',
+      campaignSection: 'YOUR CAMPAIGNS', campaignSectionHint: 'Every story has a beginning',
+      dossier: 'CAMPAIGN DOSSIER', gm: 'Game Master', coGm: 'Co-GM', player: 'Player',
+      openCampaign: 'Open campaign', membersCount: '{count} members', unspecifiedSetting: 'Setting to be discovered',
+      noDescription: 'A new chapter is waiting to be written.', newStoryTitle: 'Begin a new story',
+      newStoryDescription: 'A fresh dossier. An empty page. A circle of investigators waiting to gather.',
+      createFirst: 'Create your first campaign', readOnly: 'Read only in design preview',
+      invitationStripTitle: 'There is a seat waiting for you.', invitationStripDescription: '{count} invitation(s) from your fellow storytellers.',
+      viewInvitations: 'View invitations', noCampaignTitle: 'The first page is still blank.',
+      noCampaignDescription: 'Create a campaign as a Game Master, or accept an invitation to join your circle.',
+      loadingWorkspace: 'Opening your campaign dossiers…', workspaceError: 'Your workspace could not be loaded.',
+      invitationEyebrow: 'A PLACE AT THE TABLE', invitationsTitle: 'The circle is growing.',
+      invitationsSubtitle: 'Invitations are tied to your verified Google email. Accept one to join the campaign.',
+      previewExplanation: 'You are exploring fictional campaigns. Changes and invitations are unavailable in this read-only preview.',
+      noInvitesTitle: 'No invitations, for now.', noInvitesDescription: 'Ask your GM to invite the email address on your Google account. Invitations will appear here.',
+      invitedBy: 'Invited by {name}', invitedAs: 'Join as {role}', expires: 'Expires {date}', acceptInvite: 'Accept invitation', decline: 'Decline',
+      inviteAccepted: 'Invitation accepted. Welcome to the campaign.', inviteDeclined: 'Invitation declined.',
+      backCampaigns: 'Back to my campaigns', campaignOverview: 'CAMPAIGN OVERVIEW', editCampaign: 'Edit campaign',
+      overview: 'THE DOSSIER', setting: 'Setting', defaultLanguage: 'Campaign language', created: 'Created', owner: 'Owner',
+      privateNotes: 'GM’S PRIVATE NOTES', gmOnly: 'GM / CO-GM ONLY', noNotes: 'No private notes yet.',
+      yourCircle: 'THE CIRCLE', inviteMember: 'Invite member', pendingInvites: 'PENDING INVITATIONS',
+      noPendingInvites: 'No pending invitations.', revoke: 'Revoke invitation', campaignOwner: 'Campaign owner', you: 'You',
+      manageRole: 'Change role', removeMember: 'Remove member', ownershipNote: 'The owner manages elevated roles. GMs may remove Players. The owner’s membership stays protected.',
+      nextChapterTitle: 'Open the next chapter.', nextChapterDescription: 'Manage investigators, play sessions, reveal your story, and consult cited sources from this campaign.',
+      noMembers: 'No active members.', newCampaignEyebrow: 'A NEW CHAPTER', createDialogTitle: 'Begin your campaign.',
+      createDialogIntro: 'Give your story a home. You will become the campaign owner and Game Master.',
+      campaignName: 'Campaign name', campaignNamePlaceholder: 'The whispers of Arkham',
+      campaignDescription: 'Description', descriptionPlaceholder: 'What brings your investigators together?', optional: 'optional',
+      settingPlaceholder: 'Arkham, Massachusetts · 1926', languageHint: 'Members can choose their interface language independently.',
+      notesLabel: 'Private GM notes', notesPlaceholder: 'Secrets for your GM circle…', notesHint: 'These notes are visible only to GMs and Co-GMs.',
+      cancel: 'Cancel', saveChanges: 'Save changes', createAction: 'Create campaign', saving: 'Saving…',
+      campaignCreated: 'Your campaign is ready.', campaignUpdated: 'Campaign updated.', editDialogTitle: 'Keep the story current.',
+      editDialogIntro: 'Update this campaign’s dossier. Member roles are managed separately.',
+      inviteDialogTitle: 'Make room at the table.', inviteDialogIntro: 'Invite a verified Google email address. The invitation appears in their workspace after sign-in.',
+      emailAddress: 'Google email address', inviteRole: 'Campaign role', sendInvitation: 'Create invitation', inviteCreated: 'Invitation created. It will appear in the recipient’s workspace.',
+      inviteDeliveryHint: 'This milestone creates in-app invitations. No email is sent automatically.',
+      roleDialogTitle: 'A new role in the story.', roleDialogIntro: 'Change the campaign role for {name}. Permissions are enforced by the server.',
+      roleUpdated: 'Member role updated.', removeDialogTitle: 'Remove this member?', removeDialogIntro: '{name} will lose access to this campaign. The member record is retained for history.',
+      removeAction: 'Remove member', memberRemoved: 'Member removed from this campaign.',
+      revokeDialogTitle: 'Close this invitation?', revokeDialogIntro: 'The pending invitation for {email} will no longer grant access.',
+      revokeAction: 'Revoke invitation', invitationRevoked: 'Invitation revoked.',
+      conflict: 'This record changed while you were viewing it. Refresh the workspace, then review your changes before saving.',
+      permissionDenied: 'Your current role does not allow that action. The workspace has been refreshed.',
+      refreshWorkspace: 'Refresh workspace', languageSavedLocally: 'The interface language changed locally. Your account preference could not be saved.',
+      operationFailed: 'The operation could not be completed. Please try again.', close: 'Close',
+      setupTitle: 'Connect your Google workspace.', setupIntro: 'The app uses real Google identity, Apps Script, and a private central Sheets database. The owner keeps the raw database private.',
+      setupStep1: 'Open the google-apps-script folder in the downloaded repository, create an Apps Script project, and copy its files as described in the setup guide.',
+      setupStep2: 'Create a Google OAuth web client. Configure the deployment callback URL and the required Script Properties following the repository setup guide.',
+      setupStep3: 'Run the database initializer, then deploy the Apps Script web app with the documented access settings.',
+      setupStep4: 'Test sign-in using two Google accounts, campaign permissions, and cross-campaign isolation before inviting players.',
+      setupMissing: 'Missing configuration', setupSecurity: 'Never paste a Google client secret or one-time Google authorization code into this page. Runtime secrets belong in Apps Script Script Properties.',
+      setupDocs: 'Complete setup instructions: docs/GOOGLE_SETUP.md in the repository.',
+      english: 'English', thai: 'ไทย', dismiss: 'Dismiss notification', previewExit: 'Leave design preview',
+      privacyNote: 'Campaign access is checked by the server. Raw database access is not shared with players.',
+      signOutFailed: 'Could not revoke the server session. Your local session has been cleared.',
+      declineConfirmTitle: 'Decline this invitation?', declineConfirmDescription: 'You will not join {name}. Your GM can create a new invitation later.',
+      gmPermissionNote: 'A Game Master can invite Players. Only the owner can invite Co-GMs.',
+      inAppInvitation: 'IN-APP INVITATION',
+      offlinePreviewBanner: 'Offline design preview · sample data · read only',
+      offlinePreviewExplanation: 'This standalone file contains fictional sample campaigns. No network connection is used, and sign-in, real data, and changes are unavailable.',
+      offlineSetupRequired: 'You are viewing an offline design preview',
+      offlineSetupDescription: 'Open the full app with its development server or an Apps Script deployment for Google sign-in and real campaigns.',
+      offlineBackToSignIn: 'About this preview →', offlinePrivateWorkspace: 'Sample workspace',
+      offlineLoginPrivacy: 'Offline sample only. Google sign-in is unavailable in this file.'
+    },
+    th: {
+      brandSubtitle: 'คู่มือจัดการแคมเปญ', privatePlatform: 'พื้นที่ส่วนตัวสำหรับแคมเปญ',
+      landingEyebrow: 'สำหรับเรื่องราวที่ยังอยู่ในความทรงจำ', landingTitle: 'ทุกเรื่องราว\nทิ้งร่องรอยไว้เสมอ',
+      landingDescription: 'บ้านของแคมเปญ Arkham Horror RPG รวบรวมวงผู้เล่น เก็บความลับให้ปลอดภัย และเตรียมพร้อมสำหรับบทต่อไป',
+      googleSignIn: 'เข้าสู่ระบบด้วย Google', loginPrivacy: 'บัญชี Google ของคุณ แคมเปญส่วนตัวของคุณ',
+      checkingConfig: 'กำลังตรวจสอบสภาพแวดล้อม…', checkingDescription: 'กำลังเตรียมการเชื่อมต่อที่ปลอดภัย',
+      explorePreview: 'สำรวจหน้าตาแอป', sampleReadOnly: 'แคมเปญตัวอย่าง · อ่านอย่างเดียว',
+      artQuote: 'ประตูบางบาน\nควรเปิดไปด้วยกัน', foundationEdition: 'รุ่นจัดการแคมเปญ',
+      independentNotice: 'แอปเสริมอิสระสำหรับ Arkham Horror: The Roleplaying Game', noBookContent: 'แหล่งข้อมูลส่วนตัว กฎพร้อมแหล่งอ้างอิง',
+      previewBanner: 'ตัวอย่างหน้าตา · ข้อมูลตัวอย่าง · อ่านอย่างเดียว', backToSignIn: 'กลับหน้าเข้าสู่ระบบ →',
+      yourWorkspace: 'พื้นที่ของคุณ', myCampaigns: 'แคมเปญของฉัน', invitations: 'คำเชิญ',
+      nextChapters: 'เครื่องมือแคมเปญ', investigators: 'นักสืบ', sessions: 'เซสชัน', campaignJournal: 'เรื่องราวและบันทึก', soon: 'เร็ว ๆ นี้', rulebook: 'หนังสือกฎ', assistant: 'ผู้ช่วย AI', materials: 'สแกนและแหล่งข้อมูล', tools: 'ส่งออกและกู้คืน',
+      editionCard: 'พื้นที่สำหรับรวมตัว\nเรื่องราวสำหรับจดจำ', googleAccount: 'บัญชี Google',
+      workspaceLabel: 'พื้นที่ทำงาน', privateWorkspace: 'พื้นที่ส่วนตัว', workspaceFooter: 'ทุกแคมเปญคือโลกของมันเอง',
+      setupRequired: 'ต้องตั้งค่า Google sign-in ก่อน', setupDescription: 'เชื่อมต่อ Apps Script deployment และ Google OAuth client เพื่อเปิดพื้นที่ส่วนตัว',
+      setupGuide: 'ดูวิธีตั้งค่า', configError: 'เชื่อมต่อ backend ไม่สำเร็จ', configErrorDescription: 'ตรวจสอบการเชื่อมต่อเซิร์ฟเวอร์ แล้วลองอีกครั้ง',
+      retry: 'ลองอีกครั้ง', signingIn: 'กำลังเปิดหน้า Google…', waitingForGoogle: 'กำลังรอการเข้าสู่ระบบ Google',
+      completeInWindow: 'ดำเนินการในหน้าต่างเข้าสู่ระบบ หน้านี้จะเชื่อมต่อให้อัตโนมัติ', cancelSignIn: 'ยกเลิกการเข้าสู่ระบบ',
+      loginReady: 'พร้อมเข้าสู่ระบบอย่างปลอดภัย', loginReadyDescription: 'เฉพาะสมาชิกแคมเปญเท่านั้นที่เข้าถึงข้อมูลแคมเปญได้',
+      ticketInstructions: 'เข้าสู่ระบบ Google ในหน้าต่างใหม่ หากกลับมายังหน้านี้ไม่ได้อัตโนมัติ ให้วาง handoff ticket แบบใช้ครั้งเดียวที่แสดงในหน้าต่างนั้น',
+      ticketLabel: 'Handoff ticket แบบใช้ครั้งเดียว', completeLogin: 'ยืนยันการเข้าสู่ระบบ', openSignInWindow: 'เปิดหน้าต่างเข้าสู่ระบบ Google →',
+      finishSigningIn: 'กำลังยืนยันการเข้าสู่ระบบ…', loginFailed: 'เข้าสู่ระบบไม่สำเร็จ กรุณาเริ่มใหม่',
+      loginTimeout: 'หน้าต่างเข้าสู่ระบบหมดอายุ กรุณาเริ่มใหม่', loginExpired: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง',
+      signOut: 'ออกจากระบบ', signedOut: 'ออกจากระบบแล้ว', previewProfile: 'ตัวอย่างหน้าตาแอป',
+      welcomeEyebrow: 'เรื่องราวของคุณ เริ่มด้วยกัน', campaignTitle: 'แคมเปญของคุณเริ่มที่นี่',
+      campaignSubtitle: 'รวบรวมวงผู้เล่น ติดตามเรื่องราว เตรียมพื้นที่ให้สิ่งที่ยังไม่รู้',
+      createCampaign: 'แคมเปญใหม่', activeCampaigns: 'แคมเปญที่เข้าร่วม', campaignStatNote: 'โลกส่วนตัวของคุณ',
+      memberSeats: 'ที่นั่งสมาชิก', memberStatNote: 'รวมทุกแคมเปญ', pendingInvitations: 'คำเชิญที่รอตอบ', invitationStatNote: 'ที่นั่งในวงผู้เล่น',
+      campaignSection: 'แคมเปญของคุณ', campaignSectionHint: 'ทุกเรื่องราวมีจุดเริ่มต้น',
+      dossier: 'แฟ้มแคมเปญ', gm: 'Game Master', coGm: 'Co-GM', player: 'ผู้เล่น',
+      openCampaign: 'เปิดแคมเปญ', membersCount: 'สมาชิก {count} คน', unspecifiedSetting: 'ยังไม่ได้ระบุฉากหลัง',
+      noDescription: 'บทใหม่กำลังรอให้เขียน', newStoryTitle: 'เริ่มเรื่องราวใหม่',
+      newStoryDescription: 'แฟ้มใหม่ หน้าว่าง และวงนักสืบที่พร้อมรวมตัว',
+      createFirst: 'สร้างแคมเปญแรก', readOnly: 'อ่านอย่างเดียวในตัวอย่างหน้าตาแอป',
+      invitationStripTitle: 'มีที่นั่งรอคุณอยู่', invitationStripDescription: 'คำเชิญ {count} รายการจากเพื่อนร่วมเรื่องราว',
+      viewInvitations: 'ดูคำเชิญ', noCampaignTitle: 'หน้าแรกยังว่างอยู่',
+      noCampaignDescription: 'สร้างแคมเปญในฐานะ Game Master หรือรับคำเชิญเพื่อเข้าร่วมวงผู้เล่น',
+      loadingWorkspace: 'กำลังเปิดแฟ้มแคมเปญ…', workspaceError: 'โหลดพื้นที่ทำงานไม่สำเร็จ',
+      invitationEyebrow: 'ที่นั่งในวงผู้เล่น', invitationsTitle: 'วงผู้เล่นกำลังเติบโต',
+      invitationsSubtitle: 'คำเชิญผูกกับอีเมล Google ที่ยืนยันแล้วของคุณ กดรับเพื่อเข้าร่วมแคมเปญ',
+      previewExplanation: 'คุณกำลังดูแคมเปญสมมติ ตัวอย่างนี้อ่านอย่างเดียว จึงแก้ไขข้อมูลและตอบคำเชิญไม่ได้',
+      noInvitesTitle: 'ยังไม่มีคำเชิญ', noInvitesDescription: 'ให้ GM เชิญด้วยอีเมลที่ตรงกับบัญชี Google ของคุณ คำเชิญจะปรากฏที่นี่',
+      invitedBy: 'เชิญโดย {name}', invitedAs: 'เข้าร่วมในฐานะ {role}', expires: 'หมดอายุ {date}', acceptInvite: 'รับคำเชิญ', decline: 'ปฏิเสธ',
+      inviteAccepted: 'รับคำเชิญแล้ว ยินดีต้อนรับสู่แคมเปญ', inviteDeclined: 'ปฏิเสธคำเชิญแล้ว',
+      backCampaigns: 'กลับไปแคมเปญของฉัน', campaignOverview: 'ภาพรวมแคมเปญ', editCampaign: 'แก้ไขแคมเปญ',
+      overview: 'แฟ้มเรื่องราว', setting: 'ฉากหลัง', defaultLanguage: 'ภาษาแคมเปญ', created: 'สร้างเมื่อ', owner: 'เจ้าของ',
+      privateNotes: 'บันทึกส่วนตัวของ GM', gmOnly: 'เฉพาะ GM / CO-GM', noNotes: 'ยังไม่มีบันทึกส่วนตัว',
+      yourCircle: 'วงผู้เล่น', inviteMember: 'เชิญสมาชิก', pendingInvites: 'คำเชิญที่รอตอบ',
+      noPendingInvites: 'ยังไม่มีคำเชิญที่รอตอบ', revoke: 'ยกเลิกคำเชิญ', campaignOwner: 'เจ้าของแคมเปญ', you: 'คุณ',
+      manageRole: 'เปลี่ยนบทบาท', removeMember: 'นำสมาชิกออก', ownershipNote: 'เจ้าของจัดการบทบาท GM และ Co-GM ส่วน GM นำผู้เล่นออกได้ สมาชิกเจ้าของได้รับการป้องกัน',
+      nextChapterTitle: 'เปิดบทต่อไป', nextChapterDescription: 'จัดการนักสืบ เล่นเซสชัน เปิดเผยเรื่องราว และค้นแหล่งข้อมูลที่อ้างอิงได้ภายในแคมเปญนี้',
+      noMembers: 'ยังไม่มีสมาชิกที่เข้าร่วม', newCampaignEyebrow: 'บทใหม่', createDialogTitle: 'เริ่มแคมเปญของคุณ',
+      createDialogIntro: 'สร้างบ้านให้เรื่องราว คุณจะเป็นเจ้าของแคมเปญและ Game Master',
+      campaignName: 'ชื่อแคมเปญ', campaignNamePlaceholder: 'เสียงกระซิบจากอาร์คัม',
+      campaignDescription: 'คำอธิบาย', descriptionPlaceholder: 'อะไรทำให้นักสืบของคุณมารวมตัวกัน?', optional: 'ไม่บังคับ',
+      settingPlaceholder: 'Arkham, Massachusetts · 1926', languageHint: 'สมาชิกเลือกภาษาหน้าจอแยกกันได้ ไม่เปลี่ยนข้อมูลเกม',
+      notesLabel: 'บันทึกส่วนตัวของ GM', notesPlaceholder: 'ความลับสำหรับวง GM ของคุณ…', notesHint: 'เฉพาะ GM และ Co-GM เท่านั้นที่เห็นบันทึกนี้',
+      cancel: 'ยกเลิก', saveChanges: 'บันทึกการเปลี่ยนแปลง', createAction: 'สร้างแคมเปญ', saving: 'กำลังบันทึก…',
+      campaignCreated: 'แคมเปญของคุณพร้อมแล้ว', campaignUpdated: 'อัปเดตแคมเปญแล้ว', editDialogTitle: 'ดูแลเรื่องราวให้เป็นปัจจุบัน',
+      editDialogIntro: 'อัปเดตแฟ้มแคมเปญนี้ บทบาทสมาชิกจัดการแยกต่างหาก',
+      inviteDialogTitle: 'เพิ่มที่นั่งในวงผู้เล่น', inviteDialogIntro: 'เชิญด้วยอีเมล Google ที่ยืนยันแล้ว คำเชิญจะแสดงในพื้นที่ทำงานของผู้รับหลังเข้าสู่ระบบ',
+      emailAddress: 'อีเมลบัญชี Google', inviteRole: 'บทบาทในแคมเปญ', sendInvitation: 'สร้างคำเชิญ', inviteCreated: 'สร้างคำเชิญแล้ว คำเชิญจะแสดงในพื้นที่ทำงานของผู้รับ',
+      inviteDeliveryHint: 'รุ่นนี้สร้างคำเชิญภายในแอป ยังไม่ส่งอีเมลให้อัตโนมัติ',
+      roleDialogTitle: 'บทบาทใหม่ในเรื่องราว', roleDialogIntro: 'เปลี่ยนบทบาทของ {name} เซิร์ฟเวอร์เป็นผู้ตรวจสอบสิทธิ์',
+      roleUpdated: 'อัปเดตบทบาทสมาชิกแล้ว', removeDialogTitle: 'นำสมาชิกนี้ออกหรือไม่?', removeDialogIntro: '{name} จะไม่สามารถเข้าถึงแคมเปญนี้ได้ ระบบเก็บประวัติสมาชิกไว้',
+      removeAction: 'นำสมาชิกออก', memberRemoved: 'นำสมาชิกออกจากแคมเปญแล้ว',
+      revokeDialogTitle: 'ยกเลิกคำเชิญนี้หรือไม่?', revokeDialogIntro: 'คำเชิญที่รอตอบสำหรับ {email} จะใช้เข้าร่วมแคมเปญไม่ได้อีก',
+      revokeAction: 'ยกเลิกคำเชิญ', invitationRevoked: 'ยกเลิกคำเชิญแล้ว',
+      conflict: 'ข้อมูลนี้เปลี่ยนระหว่างที่คุณเปิดดู กรุณารีเฟรชพื้นที่ทำงานแล้วตรวจสอบการเปลี่ยนแปลงก่อนบันทึก',
+      permissionDenied: 'บทบาทปัจจุบันของคุณไม่มีสิทธิ์ทำรายการนี้ รีเฟรชข้อมูลแล้ว',
+      refreshWorkspace: 'รีเฟรชพื้นที่ทำงาน', languageSavedLocally: 'เปลี่ยนภาษาหน้าจอในเครื่องแล้ว แต่บันทึกค่าบัญชีไม่สำเร็จ',
+      operationFailed: 'ทำรายการไม่สำเร็จ กรุณาลองอีกครั้ง', close: 'ปิด',
+      setupTitle: 'เชื่อมต่อพื้นที่ Google ของคุณ', setupIntro: 'แอปใช้บัญชี Google จริง Apps Script และฐานข้อมูล Sheets กลางแบบส่วนตัว เจ้าของเก็บฐานข้อมูลดิบไว้ส่วนตัว',
+      setupStep1: 'เปิดโฟลเดอร์ google-apps-script ใน repository ที่ดาวน์โหลด สร้างโปรเจกต์ Apps Script แล้วคัดลอกไฟล์ตามคู่มือตั้งค่า',
+      setupStep2: 'สร้าง Google OAuth web client ตั้ง callback URL และ Script Properties ตามคู่มือตั้งค่าใน repository',
+      setupStep3: 'เรียกตัวสร้างฐานข้อมูล แล้ว deploy Apps Script web app ด้วยการตั้งค่าสิทธิ์ที่คู่มือระบุ',
+      setupStep4: 'ทดสอบการเข้าสู่ระบบด้วยบัญชี Google สองบัญชี สิทธิ์สมาชิก และการแยกข้อมูลแคมเปญก่อนเชิญผู้เล่น',
+      setupMissing: 'การตั้งค่าที่ยังขาด', setupSecurity: 'ห้ามวาง Google client secret หรือ Google authorization code ลงหน้านี้ เก็บ secret ที่ Script Properties ของ Apps Script เท่านั้น',
+      setupDocs: 'คู่มือฉบับเต็ม: docs/GOOGLE_SETUP.md ใน repository',
+      english: 'English', thai: 'ไทย', dismiss: 'ปิดข้อความแจ้งเตือน', previewExit: 'ออกจากตัวอย่างหน้าตาแอป',
+      privacyNote: 'เซิร์ฟเวอร์ตรวจสอบสิทธิ์แคมเปญ ไม่แชร์ฐานข้อมูลดิบให้ผู้เล่น',
+      signOutFailed: 'เพิกถอนเซสชันบนเซิร์ฟเวอร์ไม่สำเร็จ ล้างเซสชันในเครื่องแล้ว',
+      declineConfirmTitle: 'ปฏิเสธคำเชิญนี้หรือไม่?', declineConfirmDescription: 'คุณจะไม่เข้าร่วม {name} GM สามารถสร้างคำเชิญใหม่ได้ภายหลัง',
+      gmPermissionNote: 'Game Master เชิญผู้เล่นได้ เฉพาะเจ้าของเท่านั้นที่เชิญ Co-GM ได้',
+      inAppInvitation: 'คำเชิญภายในแอป',
+      offlinePreviewBanner: 'ตัวอย่างออฟไลน์ · ข้อมูลตัวอย่าง · อ่านอย่างเดียว',
+      offlinePreviewExplanation: 'ไฟล์นี้มีแคมเปญสมมติเท่านั้น ไม่เชื่อมต่อเครือข่าย จึงเข้าสู่ระบบ ดูข้อมูลจริง หรือแก้ไขข้อมูลไม่ได้',
+      offlineSetupRequired: 'คุณกำลังดูตัวอย่างหน้าตาแอปแบบออฟไลน์',
+      offlineSetupDescription: 'เปิดแอปฉบับเต็มผ่านเซิร์ฟเวอร์พัฒนาหรือ Apps Script deployment เพื่อเข้าสู่ระบบ Google และใช้งานแคมเปญจริง',
+      offlineBackToSignIn: 'เกี่ยวกับตัวอย่างนี้ →', offlinePrivateWorkspace: 'พื้นที่ตัวอย่าง',
+      offlineLoginPrivacy: 'ข้อมูลตัวอย่างออฟไลน์ ไฟล์นี้เข้าสู่ระบบ Google ไม่ได้'
+    }
+  };
+
+  const SESSION_KEY = 'arkham.session';
+  const LOGIN_KEY = 'arkham.pendingLogin';
+  const LANGUAGE_KEY = 'arkham.language';
+  const state = { language: OFFLINE_PREVIEW || readStorage('localStorage', LANGUAGE_KEY) === 'th' ? 'th' : 'en', config: null, configError: false,
+    token: OFFLINE_PREVIEW ? null : readStorage('sessionStorage', SESSION_KEY), data: null, preview: false, view: 'campaigns', selectedId: null,
+    loading: false, loadError: false, login: null, loginBusy: false, loginTimer: null, popup: null,
+    languageBusy: false, bootstrapGeneration: 0, dialogBusy: false, pendingMutations: new Map(), loginPollPromise: null };
+  const $ = (selector) => document.querySelector(selector);
+  function readStorage(storageName, key) { try { return window[storageName].getItem(key); } catch (_) { return null; } }
+  function writeStorage(storageName, key, value) { try { const storage = window[storageName]; value == null ? storage.removeItem(key) : storage.setItem(key, value); } catch (_) {} }
+  function t(key, values = {}) {
+    const aliases = { previewBanner: 'offlinePreviewBanner', previewExplanation: 'offlinePreviewExplanation', setupRequired: 'offlineSetupRequired', setupDescription: 'offlineSetupDescription', backToSignIn: 'offlineBackToSignIn', privateWorkspace: 'offlinePrivateWorkspace', loginPrivacy: 'offlineLoginPrivacy' };
+    if (OFFLINE_PREVIEW && aliases[key]) key = aliases[key];
+    return (dictionary[state.language][key] || dictionary.en[key] || key).replace(/\{(\w+)\}/g, (_, name) => String(values[name] == null ? '' : values[name]));
+  }
+  function node(tag, className, text) { const result = document.createElement(tag); if (className) result.className = className; if (text != null) result.textContent = text; return result; }
+  function append(parent, ...children) { children.filter(Boolean).forEach(child => parent.append(child)); return parent; }
+  function action(text, className, handler, disabled = false) { const button = node('button', className, text); button.type = 'button'; button.disabled = disabled; if (handler) button.addEventListener('click', handler); return button; }
+  function roleName(role) { return t(role === 'GM' ? 'gm' : role === 'CO_GM' ? 'coGm' : 'player'); }
+  function roleBadge(role) { return node('span', 'role-badge ' + (role === 'CO_GM' ? 'co-gm' : role === 'PLAYER' ? 'player' : ''), roleName(role)); }
+  function initials(name) { return String(name || 'A').trim().split(/\s+/).slice(0, 2).map(part => Array.from(part)[0] || '').join('').toUpperCase(); }
+  function dateLabel(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString(state.language === 'th' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function showToast(message, error = false) { const toast = node('div', 'toast' + (error ? ' error' : '')); const dismiss = action('×', '', () => toast.remove()); dismiss.setAttribute('aria-label', t('dismiss')); append(toast, node('span', '', message), dismiss); $('#toast-stack').append(toast); setTimeout(() => toast.remove(), error ? 11000 : 6000); }
+  function announce(message) { $('#announcer').textContent = message; }
+  function humanError(error) {
+    if (error.code === 'CONFLICT') return t('conflict');
+    if (error.code === 'FORBIDDEN') return t('permissionDenied');
+    if (error.code === 'AUTH_REQUIRED') return t('loginExpired');
+    return error.message || t('operationFailed');
+  }
+  function makeError(code, message) { const error = new Error(message); error.code = code; return error; }
+  function canonical(value) {
+    if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+    if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonical(value[key])).join(',') + '}';
+    return JSON.stringify(value);
+  }
+
+  async function rpc(operation, payload = {}, expectedVersion, isPublic = false) {
+    if (OFFLINE_PREVIEW) throw makeError('PREVIEW_READ_ONLY', t('offlinePreviewExplanation'));
+    if (state.preview && !isPublic) throw makeError('PREVIEW_READ_ONLY', t('readOnly'));
+    payload = JSON.parse(JSON.stringify(payload));
+    const request = { operation, payload };
+    let intent = null;
+    if (!isPublic) {
+      request.sessionToken = state.token;
+      if (operation !== 'bootstrap') {
+        intent = canonical({ operation, payload, expectedVersion: expectedVersion == null ? null : expectedVersion });
+        if (!state.pendingMutations.has(intent)) state.pendingMutations.set(intent, crypto.randomUUID());
+        request.requestId = state.pendingMutations.get(intent);
+      } else request.requestId = crypto.randomUUID();
+    }
+    if (operation === 'logout') { request.sessionToken = payload.sessionToken; request.payload = {}; }
+    if (expectedVersion != null) request.expectedVersion = expectedVersion;
+    let envelope;
+    if (window.google && google.script && google.script.run) {
+      envelope = await new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(() => reject(makeError('NETWORK', t('operationFailed')))).api(request));
+    } else {
+      let response;
+      try { response = await fetch('/api', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request), cache: 'no-store', credentials: 'same-origin' }); }
+      catch (_) { throw makeError('NETWORK', t('operationFailed')); }
+      try { envelope = await response.json(); } catch (_) { throw makeError('NETWORK', t('operationFailed')); }
+    }
+    if (!envelope || envelope.ok !== true) {
+      const detail = envelope && envelope.error;
+      const error = makeError(detail && detail.code || 'UNKNOWN', detail && detail.message || t('operationFailed'));
+      if (intent && ['FORBIDDEN', 'VALIDATION', 'CONFLICT', 'AUTH_REQUIRED', 'NOT_FOUND', 'IDEMPOTENCY_CONFLICT'].includes(error.code)) state.pendingMutations.delete(intent);
+      if (error.code === 'AUTH_REQUIRED' && !isPublic) expireSession();
+      throw error;
+    }
+    if (intent) state.pendingMutations.delete(intent);
+    return envelope.data;
+  }
+
+  function applyLanguage() {
+    document.documentElement.lang = state.language;
+    document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = t(element.dataset.i18n); });
+    document.querySelectorAll('[data-language-toggle]').forEach(button => { button.setAttribute('aria-label', state.language === 'en' ? 'เปลี่ยนภาษาเป็นไทย' : 'Switch to English'); button.setAttribute('aria-pressed', String(state.language === 'th')); button.disabled = state.languageBusy; });
+    ['#sign-out', '#mobile-sign-out'].forEach(selector => { if ($(selector)) { $(selector).setAttribute('aria-label', state.preview ? t('previewExit') : t('signOut')); $(selector).title = state.preview ? t('previewExit') : t('signOut'); } });
+    renderAuthStatus();
+    if (state.data || state.loading || state.loadError) renderWorkspace();
+  }
+  async function toggleLanguage() {
+    if (state.languageBusy) return;
+    state.language = state.language === 'en' ? 'th' : 'en';
+    writeStorage('localStorage', LANGUAGE_KEY, state.language);
+    applyLanguage();
+    if (state.token && state.data && !state.preview) {
+      state.languageBusy = true; applyLanguage();
+      try { const result = await rpc('updatePreferences', { preferredLanguage: state.language }, state.data.user.version); state.data.user = result.user; }
+      catch (error) { if (error.code !== 'AUTH_REQUIRED') showToast(t('languageSavedLocally'), true); }
+      finally { state.languageBusy = false; applyLanguage(); }
+    }
+  }
+
+  function renderAuthStatus() {
+    const status = $('#auth-status'); status.replaceChildren();
+    const content = node('div');
+    let title = 'checkingConfig', description = 'checkingDescription';
+    if (state.loginBusy) { title = 'signingIn'; description = 'checkingDescription'; }
+    else if (state.login) { title = 'waitingForGoogle'; description = 'completeInWindow'; }
+    else if (state.configError) { title = 'configError'; description = 'configErrorDescription'; }
+    else if (state.config) { title = state.config.configured ? 'loginReady' : 'setupRequired'; description = state.config.configured ? 'loginReadyDescription' : 'setupDescription'; }
+    append(content, node('strong', '', t(title)), node('p', '', t(description)));
+    if (state.config && !state.config.configured) append(content, action(t('setupGuide') + ' →', 'text-button', showSetup));
+    if (state.configError) append(content, action(t('retry'), 'text-button', configure));
+    if (state.login) {
+      if (state.login.authorizationUrl) { const link = node('a', 'text-button', t('openSignInWindow')); link.href = state.login.authorizationUrl; link.target = '_blank'; link.rel = 'noopener noreferrer'; content.append(link); }
+      append(content, action(t('cancelSignIn'), 'text-button', cancelLogin));
+    }
+    append(status, node('span', 'status-dot'), content);
+    $('#google-sign-in').disabled = !state.config || !state.config.configured || !!state.login || state.loginBusy;
+    $('#ticket-fallback').hidden = !state.login;
+  }
+  async function configure() {
+    state.configError = false; state.config = null; renderAuthStatus();
+    try { state.config = await rpc('publicConfig', {}, undefined, true); }
+    catch (_) { state.configError = true; }
+    renderAuthStatus();
+  }
+  function showSetup() {
+    const body = node('div', 'setup-doc');
+    body.append(node('p', 'dialog-intro', t('setupIntro')));
+    const list = node('ol'); ['setupStep1', 'setupStep2', 'setupStep3', 'setupStep4'].forEach(key => list.append(node('li', '', t(key)))); body.append(list);
+    const missing = state.config && state.config.missingSettings;
+    if (Array.isArray(missing) && missing.length) { const line = node('p'); append(line, node('strong', '', t('setupMissing') + ': '), node('code', '', missing.join(', '))); body.append(line); }
+    append(body, node('p', 'field-hint', t('setupDocs')), node('div', 'notice-panel', t('setupSecurity')));
+    openDialog(t('foundationEdition'), t('setupTitle'), body, [{ label: t('close'), style: 'button button-outline', handler: closeDialog }]);
+  }
+  function base64url(bytes) { return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  async function beginLogin() {
+    if (!state.config || !state.config.configured || state.login || state.loginBusy) return;
+    writeStorage('sessionStorage', LOGIN_KEY, null);
+    state.popup = window.open('about:blank', '_blank', 'popup,width=540,height=700');
+    if (state.popup) { try { state.popup.opener = null; state.popup.document.title = 'Google sign-in'; } catch (_) {} }
+    state.loginBusy = true; renderAuthStatus();
+    try {
+      const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)));
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+      const result = await rpc('beginLogin', { browserChallenge: base64url(new Uint8Array(digest)) }, undefined, true);
+      const target = new URL(result.authorizationUrl);
+      if (target.protocol !== 'https:' || target.hostname !== 'accounts.google.com') throw makeError('AUTH_FLOW', t('loginFailed'));
+      state.login = { state: result.state, verifier, startedAt: Date.now(), authorizationUrl: result.authorizationUrl };
+      writeStorage('sessionStorage', LOGIN_KEY, JSON.stringify({ state: result.state, verifier, startedAt: state.login.startedAt }));
+      if (state.popup) { try { state.popup.location.replace(result.authorizationUrl); } catch (_) {} }
+      state.loginBusy = false; renderAuthStatus(); pollLogin();
+    } catch (error) { state.loginBusy = false; cancelLogin(); showToast(humanError(error), true); }
+  }
+  function cancelLogin() {
+    if (state.loginTimer) clearTimeout(state.loginTimer);
+    state.loginTimer = null; state.login = null; state.loginBusy = false;
+    writeStorage('sessionStorage', LOGIN_KEY, null);
+    if (state.popup) { try { state.popup.close(); } catch (_) {} } state.popup = null;
+    $('#ticket-input').value = ''; renderAuthStatus();
+  }
+  async function pollLogin() {
+    if (!state.login || state.loginBusy) return;
+    const pending = state.login;
+    if (Date.now() - pending.startedAt > 10 * 60 * 1000) { cancelLogin(); showToast(t('loginTimeout'), true); return; }
+    const transport = rpc('pollLogin', { state: pending.state, browserVerifier: pending.verifier }, undefined, true);
+    state.loginPollPromise = transport;
+    try {
+      const result = await transport;
+      if (state.login !== pending) return;
+      if (result.sessionToken) { await finishSession(result); return; }
+    } catch (error) {
+      if (state.login !== pending) return;
+      if (error.code !== 'NETWORK' && !state.loginBusy) { cancelLogin(); showToast(humanError(error), true); return; }
+    } finally {
+      if (state.loginPollPromise === transport) state.loginPollPromise = null;
+    }
+    if (state.login === pending && !state.loginBusy) state.loginTimer = setTimeout(pollLogin, 2000);
+  }
+  async function finishTicket(ticket) {
+    if (!state.login || state.loginBusy || !ticket.trim()) return;
+    const pending = state.login;
+    state.loginBusy = true; renderAuthStatus();
+    try {
+      if (state.loginPollPromise) { try { await state.loginPollPromise; } catch (_) {} }
+      if (state.login !== pending) return;
+      const result = await rpc('finishLogin', { ticket: ticket.trim(), browserVerifier: pending.verifier }, undefined, true);
+      if (state.login === pending) await finishSession(result);
+    } catch (error) { if (state.login !== pending) return; state.loginBusy = false; renderAuthStatus(); showToast(humanError(error), true); state.loginTimer = setTimeout(pollLogin, 2000); }
+  }
+  async function finishSession(result) {
+    if (!result || typeof result.sessionToken !== 'string') throw makeError('AUTH_FLOW', t('loginFailed'));
+    cancelLogin(); state.preview = false; state.token = result.sessionToken;
+    writeStorage('sessionStorage', SESSION_KEY, state.token);
+    if (result.user && ['en', 'th'].includes(result.user.preferredLanguage)) { state.language = result.user.preferredLanguage; writeStorage('localStorage', LANGUAGE_KEY, state.language); }
+    applyLanguage(); await loadWorkspace();
+  }
+  function clearSession() {
+    state.token = null; state.data = null; state.selectedId = null; state.view = 'campaigns'; state.preview = false;
+    state.loading = false; state.loadError = false; state.bootstrapGeneration += 1;
+    writeStorage('sessionStorage', SESSION_KEY, null); state.pendingMutations.clear(); state.dialogBusy = false; closeDialog();
+    $('#workspace').hidden = true; $('#landing').hidden = false; $('#app-content').replaceChildren();
+    $('#profile-name').textContent = ''; $('#profile-avatar').textContent = 'A';
+    $('#campaign-count').textContent = '0'; $('#invitation-count').textContent = '0';
+    $('#breadcrumb-current').textContent = t('myCampaigns');
+    renderAuthStatus();
+  }
+  function expireSession() { clearSession(); showToast(t('loginExpired'), true); }
+  async function signOut() {
+    if (state.preview) { leavePreview(); return; }
+    const token = state.token; clearSession();
+    try { if (token) await rpc('logout', { sessionToken: token }, undefined, true); showToast(t('signedOut')); }
+    catch (_) { showToast(t('signOutFailed'), true); }
+  }
+  window.addEventListener('message', event => {
+    if (!state.login || !event.data || event.data.type !== 'arkham-oauth' || event.data.state !== state.login.state || typeof event.data.ticket !== 'string') return;
+    let trusted = event.origin === location.origin && event.origin !== 'null';
+    try { const source = new URL(event.origin); trusted = trusted || (source.protocol === 'https:' && /(^|\.)googleusercontent\.com$/.test(source.hostname)); } catch (_) {}
+    if (trusted) finishTicket(event.data.ticket);
+  });
+
+  function sampleData() {
+    const campaigns = [
+      { id: 'sample-whispers', name: 'The whispers of Arkham', description: 'A missing professor. A letter written in an unfamiliar hand. Something is stirring beneath the streets you call home.', setting: 'Arkham, Massachusetts · 1926', defaultLanguage: 'en', notes: 'A fictional design sample. The professor’s last letter is kept in the university archive.', version: 1, ownerUserId: 'sample-alex', role: 'GM', memberCount: 5, sessionCount: 0, status: 'ACTIVE', createdAt: '2026-09-20T12:00:00Z' },
+      { id: 'sample-marsh', name: 'A light in the marsh', description: 'Beyond the last streetlamp, the marsh has begun to glow. Follow the lights, and remember the way back.', setting: 'The outskirts of Arkham', defaultLanguage: 'th', notes: 'Fictional notes for a read-only interface preview.', version: 1, ownerUserId: 'sample-june', role: 'CO_GM', memberCount: 4, sessionCount: 0, status: 'ACTIVE', createdAt: '2026-09-25T12:00:00Z' },
+      { id: 'sample-sentinel', name: 'The house on Sentinel Hill', description: 'The house has stood empty for thirty years. Last night, someone opened the curtains.', setting: 'Sentinel Hill · Autumn, 1926', defaultLanguage: 'en', version: 1, ownerUserId: 'sample-june', role: 'PLAYER', memberCount: 3, sessionCount: 0, status: 'ACTIVE', createdAt: '2026-10-01T12:00:00Z' }
+    ];
+    return { user: { id: 'sample-alex', displayName: 'Alex Morgan', email: 'alex@example.invalid', preferredLanguage: state.language, version: 1 }, campaigns,
+      invitations: [{ id: 'sample-invitation', campaignId: 'sample-unknown', campaignName: 'Beneath the quiet water', inviterName: 'June Bennett', email: 'alex@example.invalid', role: 'PLAYER', status: 'PENDING', version: 1, expiresAt: '2026-11-01T12:00:00Z' }], activeCampaign: null };
+  }
+  function previewCampaign(campaignId) {
+    const campaign = state.data.campaigns.find(item => item.id === campaignId);
+    const names = ['Alex Morgan', 'June Bennett', 'Theo Finch', 'Mira Collins', 'Elliot Reed'];
+    const members = names.slice(0, campaign.memberCount).map((name, index) => ({ id: 'sample-member-' + index, userId: index === 0 ? 'sample-alex' : index === 1 ? 'sample-june' : 'sample-person-' + index, user: { id: index === 0 ? 'sample-alex' : index === 1 ? 'sample-june' : 'sample-person-' + index, displayName: name }, role: index === 0 ? campaign.role : index === 1 && campaign.ownerUserId === 'sample-june' ? 'GM' : 'PLAYER', status: 'ACTIVE', version: 1 }));
+    return { campaign, role: campaign.role, isOwner: campaign.ownerUserId === state.data.user.id, members, invites: [] };
+  }
+  function enterPreview() {
+    if (state.token) return;
+    cancelLogin(); state.preview = true; state.view = 'campaigns'; state.selectedId = null; state.loadError = false; state.loading = false;
+    state.data = sampleData(); renderWorkspace(); $('#app-content').focus();
+  }
+  function leavePreview() {
+    closeDialog(); state.preview = false; state.data = null; state.selectedId = null; state.view = 'campaigns';
+    $('#workspace').hidden = true; $('#landing').hidden = false;
+    $('#explore-preview').focus(); renderAuthStatus();
+  }
+  async function loadWorkspace(campaignId = null) {
+    if (state.preview) { state.selectedId = campaignId; state.data.activeCampaign = campaignId ? previewCampaign(campaignId) : null; renderWorkspace(); return; }
+    if (!state.token) return;
+    const generation = ++state.bootstrapGeneration;
+    state.loading = true; state.loadError = false; state.selectedId = campaignId; renderWorkspace();
+    try {
+      const data = await rpc('bootstrap', campaignId ? { campaignId } : {});
+      if (generation !== state.bootstrapGeneration || !state.token) return;
+      state.data = data; state.loading = false; state.loadError = false; renderWorkspace();
+      announce(campaignId ? data.activeCampaign.campaign.name : t('myCampaigns'));
+    } catch (error) {
+      if (generation !== state.bootstrapGeneration || !state.token) return;
+      state.loading = false;
+      if (error.code === 'FORBIDDEN' && campaignId) { state.view = 'campaigns'; showToast(t('permissionDenied'), true); await loadWorkspace(); }
+      else { state.loadError = true; renderWorkspace(); showToast(humanError(error), true); }
+    }
+  }
+  function navigate(view) { state.view = view; state.selectedId = null; if (state.data) state.data.activeCampaign = null; renderWorkspace(); $('#app-content').focus(); }
+  function openCampaign(id) { state.view = 'detail'; loadWorkspace(id); $('#app-content').focus(); }
+  function renderWorkspace() {
+    $('#landing').hidden = true; $('#workspace').hidden = false;
+    $('#workspace').classList.toggle('is-preview', state.preview); $('#preview-banner').hidden = !state.preview;
+    const data = state.data;
+    $('#campaign-count').textContent = data ? data.campaigns.length : '—';
+    $('#invitation-count').textContent = data ? data.invitations.length : '—';
+    $('#profile-name').textContent = data ? data.user.displayName : '…';
+    $('#profile-avatar').textContent = data ? initials(data.user.displayName) : 'A';
+    $('#profile-label').textContent = t(state.preview ? 'previewProfile' : 'googleAccount');
+    $('#breadcrumb-current').textContent = state.view === 'invitations' ? t('invitations') : data && data.activeCampaign ? data.activeCampaign.campaign.name : t('myCampaigns');
+    document.querySelectorAll('[data-view]').forEach(button => { const active = button.dataset.view === (state.view === 'detail' ? 'campaigns' : state.view); button.classList.toggle('active', active); if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current'); });
+    const content = $('#app-content'); content.replaceChildren();
+    if (state.loading) { const loading = node('div', 'content-loading'); append(loading, node('span', 'loading-sigil', '✦'), node('p', '', t('loadingWorkspace'))); content.append(loading); return; }
+    if (state.loadError) { const error = emptyState('workspaceError', 'configErrorDescription', '◇'); append(error, action(t('retry'), 'button button-outline', () => loadWorkspace(state.selectedId))); content.append(error); return; }
+    if (!data) return;
+    if (window.ArkhamFeatures && ArkhamFeatures.supports(state.view) && data.activeCampaign) ArkhamFeatures.render(content, state.view, data.activeCampaign);
+    else if (state.view === 'detail' && data.activeCampaign) renderDetail(content, data.activeCampaign);
+    else if (state.view === 'invitations') renderInvitations(content);
+    else renderCampaigns(content);
+  }
+  function heading(eyebrowKey, titleKey, subtitleKey, button) {
+    const outer = node('div', 'page-heading'); const text = node('div');
+    append(text, append(node('div', 'eyebrow'), node('span', 'tiny-star', '✦'), node('span', '', t(eyebrowKey))), node('h1', '', t(titleKey)), subtitleKey ? node('p', '', t(subtitleKey)) : null);
+    append(outer, text, button); return outer;
+  }
+  function createButton() { const button = action('', 'button button-gold', () => campaignDialog(), state.preview); append(button, node('span', 'plus-symbol', '+'), node('span', '', t('createCampaign'))); if (state.preview) button.title = t('readOnly'); return button; }
+  function emptyState(title, description, symbol = '✦') { const empty = node('section', 'empty-state'); append(empty, node('span', '', symbol), node('h2', '', t(title)), node('p', '', t(description))); return empty; }
+  function previewNotice() { return append(node('div', 'preview-inline'), node('span', 'status-dot'), node('span', '', t('previewExplanation'))); }
+  function renderCampaigns(content) {
+    const data = state.data;
+    content.append(heading('welcomeEyebrow', 'campaignTitle', 'campaignSubtitle', createButton()));
+    const stats = node('div', 'dashboard-stats');
+    [[data.campaigns.length, 'activeCampaigns', 'campaignStatNote', '▦'], [data.campaigns.reduce((sum, item) => sum + (item.memberCount || 0), 0), 'memberSeats', 'memberStatNote', '♧'], [data.invitations.length, 'pendingInvitations', 'invitationStatNote', '✉']].forEach(([value, label, note, symbol]) => {
+      const stat = node('div', 'stat'); const text = node('div', 'stat-text', t(label)); text.append(node('small', '', t(note))); append(stat, node('span', 'stat-value', String(value).padStart(2, '0')), text, node('span', 'stat-icon', symbol)); stats.append(stat);
+    }); content.append(stats);
+    if (!data.campaigns.length) {
+      const empty = emptyState('noCampaignTitle', 'noCampaignDescription'); empty.append(action(t('createFirst'), 'button button-gold', () => campaignDialog(), state.preview)); content.append(empty);
+    } else {
+      content.append(append(node('div', 'section-heading'), node('h2', '', t('campaignSection')), node('span', '', t('campaignSectionHint'))));
+      const grid = node('div', 'campaign-grid');
+      data.campaigns.forEach((campaign, index) => grid.append(campaignCard(campaign, index)));
+      const newCard = node('section', 'new-campaign-card' + (state.preview ? ' preview-new' : ''));
+      append(newCard, node('span', 'new-symbol', '+'), node('h3', '', t('newStoryTitle')), node('p', '', t('newStoryDescription')),
+        action(t('createCampaign') + ' →', 'text-button', () => campaignDialog(), state.preview)); grid.append(newCard); content.append(grid);
+    }
+    if (data.invitations.length) {
+      const strip = node('section', 'invitation-strip'); const text = node('div'); append(text, node('strong', '', t('invitationStripTitle')), node('p', '', t('invitationStripDescription', { count: data.invitations.length })));
+      append(strip, node('span', '', '✉'), text, action(t('viewInvitations') + ' →', 'text-button', () => navigate('invitations'))); content.append(strip);
+    }
+  }
+  function campaignCard(campaign, index) {
+    const card = node('article', 'campaign-card' + (index === 0 ? ' campaign-card-paper' : ''));
+    const top = node('div', 'campaign-card-top'); append(top, node('span', 'dossier-number', t('dossier') + ' / ' + String(index + 1).padStart(2, '0')), roleBadge(campaign.role));
+    const body = node('div', 'campaign-card-body'); append(body, node('h3', '', campaign.name), node('span', 'card-motif', ['◈', '☽', '⌂'][index % 3]), node('p', 'campaign-setting', '⌖  ' + (campaign.setting || t('unspecifiedSetting'))), node('p', 'campaign-description', campaign.description || t('noDescription')));
+    const footer = node('div', 'campaign-card-footer'); const members = node('div', 'card-members'); const dots = node('span', 'member-dots'); dots.setAttribute('aria-hidden', 'true');
+    const count = Number(campaign.memberCount) || 0;
+    for (let i = 0; i < Math.min(count, 3); i++) dots.append(node('span', 'member-dot', i === 0 ? initials(state.data.user.displayName).slice(0, 1) : '·'));
+    append(members, dots, node('span', '', t('membersCount', { count })));
+    const open = action(t('openCampaign') + '  →', 'card-open', () => openCampaign(campaign.id)); open.setAttribute('aria-label', t('openCampaign') + ': ' + campaign.name);
+    append(footer, members, open); append(card, top, body, footer); return card;
+  }
+  function renderInvitations(content) {
+    content.append(heading('invitationEyebrow', 'invitationsTitle', 'invitationsSubtitle'));
+    if (state.preview) content.append(previewNotice());
+    if (!state.data.invitations.length) { content.append(emptyState('noInvitesTitle', 'noInvitesDescription', '✉')); return; }
+    const list = node('div', 'invitation-list');
+    state.data.invitations.forEach(invite => {
+      const card = node('article', 'invitation-card'); const text = node('div');
+      append(text, node('div', 'eyebrow', t('inAppInvitation')), node('h2', '', invite.campaignName), node('p', '', t('invitedBy', { name: invite.inviterName || 'GM' }) + ' · ' + t('invitedAs', { role: roleName(invite.role) })), node('small', '', t('expires', { date: dateLabel(invite.expiresAt) })));
+      const controls = node('div', 'invitation-actions');
+      append(controls, action(t('decline'), 'button button-outline button-small', () => declineDialog(invite), state.preview), action(t('acceptInvite'), 'button button-gold button-small', async event => {
+        const button = event.currentTarget; button.disabled = true;
+        try { await mutate('respondInvite', { inviteId: invite.id, decision: 'ACCEPT' }, undefined, t('inviteAccepted'), invite.campaignId); state.view = 'detail'; renderWorkspace(); }
+        catch (_) { button.disabled = false; }
+      }, state.preview));
+      append(card, text, controls); list.append(card);
+    }); content.append(list);
+  }
+  function panel(titleKey, body, extra) { const container = node('section', 'detail-panel'); append(container, append(node('div', 'detail-panel-title'), node('h2', '', t(titleKey)), extra), body); return container; }
+  function renderDetail(content, active) {
+    const campaign = active.campaign; const canManage = active.role === 'GM'; const canReadGM = canManage || active.role === 'CO_GM';
+    content.append(action('←  ' + t('backCampaigns'), 'back-button', () => navigate('campaigns')));
+    const title = heading('campaignOverview', 'noDescription', null, canManage ? action(t('editCampaign') + '  →', 'button button-outline', () => campaignDialog(campaign), state.preview) : null);
+    title.classList.add('detail-heading'); title.querySelector('h1').textContent = campaign.name;
+    const tags = node('div', 'heading-tags'); append(tags, roleBadge(active.role), node('span', 'small-muted', campaign.setting || t('unspecifiedSetting'))); title.firstChild.append(tags); content.append(title);
+    if (window.ArkhamFeatures) content.append(ArkhamFeatures.tabs(active, 'detail'));
+    if (state.preview) content.append(previewNotice());
+    const grid = node('div', 'detail-grid'); const story = node('div'); const circle = node('div');
+    const overviewBody = node('div', 'detail-panel-content'); overviewBody.append(node('p', 'detail-description', campaign.description || t('noDescription')));
+    const metadata = node('dl', 'detail-meta');
+    [['setting', campaign.setting || t('unspecifiedSetting')], ['defaultLanguage', t(campaign.defaultLanguage === 'th' ? 'thai' : 'english')], ['created', dateLabel(campaign.createdAt)], ['owner', (active.members.find(member => member.userId === campaign.ownerUserId) || {}).user?.displayName || '—']].forEach(([key, value]) => { const entry = node('div'); append(entry, node('dt', '', t(key)), node('dd', '', value)); metadata.append(entry); });
+    overviewBody.append(metadata); story.append(panel('overview', overviewBody));
+    if (canReadGM && Object.prototype.hasOwnProperty.call(campaign, 'notes')) story.append(panel('privateNotes', node('div', 'detail-panel-content notes-text', campaign.notes || t('noNotes')), node('span', 'private-label', '◈  ' + t('gmOnly'))));
+    if (window.ArkhamFeatures) story.append(ArkhamFeatures.launchers(active));
+    const memberList = node('ul', 'member-list');
+    active.members.forEach(member => {
+      const row = node('li', 'member-row'); const name = member.user && member.user.displayName || member.displayName || t('player');
+      const identity = node('div', 'member-name'); identity.append(node('strong', '', name));
+      const owner = member.userId === campaign.ownerUserId;
+      const sublabel = owner ? t('campaignOwner') : member.userId === state.data.user.id ? t('you') : '';
+      if (sublabel) identity.append(node('small', '', sublabel));
+      append(row, node('div', 'avatar', initials(name)), identity, roleBadge(member.role));
+      if (!owner && (active.isOwner || canManage && member.role === 'PLAYER')) {
+        const controls = node('div', 'member-management');
+        if (active.isOwner) { const role = action('⇄', '', () => memberRoleDialog(member, campaign.id), state.preview); role.title = t('manageRole'); role.setAttribute('aria-label', t('manageRole') + ': ' + name); controls.append(role); }
+        const remove = action('×', '', () => removeMemberDialog(member, campaign.id), state.preview); remove.title = t('removeMember'); remove.setAttribute('aria-label', t('removeMember') + ': ' + name);
+        controls.append(remove); row.append(controls);
+      } memberList.append(row);
+    });
+    circle.append(panel('yourCircle', memberList, canManage ? action('+  ' + t('inviteMember'), 'button button-outline button-small', () => inviteDialog(active), state.preview) : node('span', 'small-muted', String(active.members.length))));
+    if (canReadGM) {
+      const pending = (active.invites || []).filter(invite => invite.status === 'PENDING'); const pendingList = node('div');
+      if (!pending.length) pendingList.append(node('p', 'detail-panel-empty', t('noPendingInvites')));
+      pending.forEach(invite => {
+        const row = node('div', 'pending-row'); const identity = node('div', 'member-name'); append(identity, node('strong', '', invite.email), node('small', '', roleName(invite.role) + ' · ' + t('expires', { date: dateLabel(invite.expiresAt) })));
+        append(row, node('span', 'nav-icon', '✉'), identity);
+        if (canManage && (active.isOwner || invite.role === 'PLAYER')) { const revokeButton = action('×', 'icon-button', () => revokeDialog(invite, campaign.id), state.preview); revokeButton.title = t('revoke'); revokeButton.setAttribute('aria-label', t('revoke') + ': ' + invite.email); row.append(revokeButton); }
+        pendingList.append(row);
+      }); circle.append(panel('pendingInvites', pendingList));
+    }
+    circle.append(node('p', 'ownership-note', t('ownershipNote')));
+    append(grid, story, circle); content.append(grid);
+  }
+
+  function openDialog(eyebrow, title, body, controls = []) {
+    const dialog = $('#app-dialog'); const content = $('#dialog-content'); content.replaceChildren();
+    const header = node('div', 'dialog-header'); const headingText = node('div'); const h2 = node('h2', '', title); h2.id = 'dialog-title';
+    append(headingText, node('div', 'eyebrow', eyebrow), h2);
+    const close = action('×', 'icon-button', closeDialog); close.setAttribute('aria-label', t('close')); append(header, headingText, close); content.append(header);
+    if (body.tagName === 'FORM') { body.classList.add('dialog-form'); content.append(body); }
+    else { const inner = node('div', 'dialog-body'); inner.append(body); content.append(inner); }
+    if (controls.length) { const footer = node('div', 'dialog-footer'); controls.forEach(control => footer.append(action(control.label, control.style, control.handler))); content.append(footer); }
+    state.dialogBusy = false; document.body.classList.add('dialog-open');
+    if (!dialog.open) dialog.showModal();
+    const focus = dialog.querySelector('input,textarea,select,button'); if (focus) focus.focus();
+  }
+  function closeDialog() { if (state.dialogBusy) return; $('#app-dialog').close(); document.body.classList.remove('dialog-open'); }
+  function field(label, name, value, options = {}) {
+    const wrapper = node('div', 'form-field'); const title = node('label', '', label); const id = 'field-' + name;
+    title.htmlFor = id; if (options.optional) title.append(node('small', '', t('optional')));
+    let input;
+    if (options.choices) { input = node('select'); options.choices.forEach(([key, text]) => { const option = node('option', '', text); option.value = key; input.append(option); }); }
+    else input = node(options.multiline ? 'textarea' : 'input');
+    input.id = id; input.name = name; input.value = value || '';
+    if (options.type) input.type = options.type;
+    if (options.maxLength) input.maxLength = options.maxLength;
+    if (options.placeholder) input.placeholder = options.placeholder;
+    if (options.required) input.required = true;
+    if (options.type === 'email') { input.autocomplete = 'email'; input.spellcheck = false; }
+    append(wrapper, title, input);
+    if (options.hint) { const hint = node('p', 'field-hint', options.hint); hint.id = id + '-hint'; input.setAttribute('aria-describedby', hint.id); wrapper.append(hint); }
+    return wrapper;
+  }
+  function formBody(introKey) { const form = node('form'); const body = node('div', 'dialog-body'); if (introKey) body.append(node('p', 'dialog-intro', t(introKey))); form.append(body); return { form, body }; }
+  function formFooter(form, submitKey, handler, danger = false) {
+    const footer = node('div', 'dialog-footer'); const submit = node('button', 'button ' + (danger ? 'button-danger' : 'button-gold'), t(submitKey)); submit.type = 'submit';
+    append(footer, action(t('cancel'), 'button button-outline', closeDialog), submit); form.append(footer);
+    form.addEventListener('submit', async event => {
+      event.preventDefault(); if (state.dialogBusy || state.preview) return;
+      const priorError = form.querySelector('.form-error'); if (priorError) priorError.remove();
+      state.dialogBusy = true; const buttons = $('#app-dialog').querySelectorAll('button'); buttons.forEach(button => { button.disabled = true; }); submit.textContent = t('saving');
+      try { await handler(new FormData(form)); state.dialogBusy = false; closeDialog(); }
+      catch (error) {
+        state.dialogBusy = false; buttons.forEach(button => { button.disabled = false; }); submit.textContent = t(submitKey);
+        if (error.code === 'AUTH_REQUIRED') { closeDialog(); return; }
+        const message = node('div', 'form-error', humanError(error)); message.setAttribute('role', 'alert');
+        if (error.code === 'CONFLICT') {
+          message.append(action(t('refreshWorkspace') + ' →', 'text-button', async () => { closeDialog(); await loadWorkspace(state.selectedId); }));
+        }
+        form.querySelector('.dialog-body').append(message);
+      }
+    });
+  }
+  async function mutate(operation, payload, expectedVersion, success, refreshId = state.selectedId) {
+    try {
+      const result = await rpc(operation, payload, expectedVersion);
+      showToast(success);
+      if (operation === 'createCampaign') { state.view = 'detail'; refreshId = result.campaign.id; }
+      await loadWorkspace(refreshId); return result;
+    } catch (error) {
+      if (error.code === 'FORBIDDEN' && state.token) { await loadWorkspace(state.selectedId); }
+      throw error;
+    }
+  }
+  function campaignDialog(campaign) {
+    if (state.preview) return;
+    const editing = !!campaign; const { form, body } = formBody(editing ? 'editDialogIntro' : 'createDialogIntro');
+    body.append(field(t('campaignName'), 'name', campaign && campaign.name, { required: true, maxLength: 120, placeholder: t('campaignNamePlaceholder') }));
+    body.append(field(t('campaignDescription'), 'description', campaign && campaign.description, { optional: true, multiline: true, maxLength: 2000, placeholder: t('descriptionPlaceholder') }));
+    const row = node('div', 'form-row'); append(row, field(t('setting'), 'setting', campaign && campaign.setting, { optional: true, maxLength: 200, placeholder: t('settingPlaceholder') }), field(t('defaultLanguage'), 'defaultLanguage', campaign && campaign.defaultLanguage || state.language, { choices: [['en', t('english')], ['th', t('thai')]] })); body.append(row);
+    body.append(node('p', 'field-hint', t('languageHint')));
+    body.append(field(t('notesLabel'), 'notes', campaign && campaign.notes, { optional: true, multiline: true, maxLength: 10000, placeholder: t('notesPlaceholder'), hint: t('notesHint') }));
+    formFooter(form, editing ? 'saveChanges' : 'createAction', async values => {
+      const payload = { name: String(values.get('name')).trim(), description: String(values.get('description')), setting: String(values.get('setting')).trim(), defaultLanguage: String(values.get('defaultLanguage')), notes: String(values.get('notes')) };
+      if (editing) payload.campaignId = campaign.id;
+      await mutate(editing ? 'updateCampaign' : 'createCampaign', payload, editing ? campaign.version : undefined, t(editing ? 'campaignUpdated' : 'campaignCreated'));
+    });
+    openDialog(t(editing ? 'campaignOverview' : 'newCampaignEyebrow'), t(editing ? 'editDialogTitle' : 'createDialogTitle'), form);
+  }
+  function inviteDialog(active) {
+    if (state.preview) return;
+    const { form, body } = formBody('inviteDialogIntro');
+    body.append(field(t('emailAddress'), 'email', '', { type: 'email', required: true, maxLength: 254, placeholder: 'investigator@example.com' }));
+    const choices = [['PLAYER', t('player')]]; if (active.isOwner) choices.push(['CO_GM', t('coGm')]);
+    body.append(field(t('inviteRole'), 'role', 'PLAYER', { choices, hint: t('gmPermissionNote') }));
+    body.append(node('div', 'notice-panel', t('inviteDeliveryHint')));
+    formFooter(form, 'sendInvitation', async values => mutate('inviteMember', { campaignId: active.campaign.id, email: String(values.get('email')).trim(), role: String(values.get('role')) }, undefined, t('inviteCreated')));
+    openDialog(t('yourCircle'), t('inviteDialogTitle'), form);
+  }
+  function memberRoleDialog(member, campaignId) {
+    if (state.preview) return;
+    const { form, body } = formBody(); body.append(node('p', 'dialog-intro', t('roleDialogIntro', { name: member.user.displayName })));
+    body.append(field(t('inviteRole'), 'role', member.role, { choices: [['PLAYER', t('player')], ['CO_GM', t('coGm')], ['GM', t('gm')]] }));
+    formFooter(form, 'saveChanges', async values => mutate('setMemberRole', { campaignId, userId: member.userId, role: String(values.get('role')) }, member.version, t('roleUpdated')));
+    openDialog(t('yourCircle'), t('roleDialogTitle'), form);
+  }
+  function confirmation(eyebrowKey, titleKey, description, submitKey, handler) {
+    if (state.preview) return;
+    const { form, body } = formBody(); body.append(node('p', 'dialog-intro', description)); formFooter(form, submitKey, handler, true); openDialog(t(eyebrowKey), t(titleKey), form);
+  }
+  function removeMemberDialog(member, campaignId) { confirmation('yourCircle', 'removeDialogTitle', t('removeDialogIntro', { name: member.user.displayName }), 'removeAction', () => mutate('removeMember', { campaignId, userId: member.userId }, member.version, t('memberRemoved'))); }
+  function revokeDialog(invite, campaignId) { confirmation('pendingInvites', 'revokeDialogTitle', t('revokeDialogIntro', { email: invite.email }), 'revokeAction', () => mutate('revokeInvite', { inviteId: invite.id }, invite.version, t('invitationRevoked'), campaignId)); }
+  function declineDialog(invite) { confirmation('invitations', 'declineConfirmTitle', t('declineConfirmDescription', { name: invite.campaignName }), 'decline', () => mutate('respondInvite', { inviteId: invite.id, decision: 'DECLINE' }, undefined, t('inviteDeclined'), null)); }
+
+  document.querySelectorAll('[data-language-toggle]').forEach(button => button.addEventListener('click', toggleLanguage));
+  document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
+  document.querySelectorAll('.brand').forEach(link => link.addEventListener('click', event => { event.preventDefault(); if (state.data) navigate('campaigns'); else window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  $('#google-sign-in').addEventListener('click', beginLogin);
+  $('#explore-preview').addEventListener('click', enterPreview);
+  $('#exit-preview').addEventListener('click', leavePreview);
+  $('#sign-out').addEventListener('click', signOut);
+  if ($('#mobile-sign-out')) $('#mobile-sign-out').addEventListener('click', signOut);
+  $('#ticket-form').addEventListener('submit', event => { event.preventDefault(); finishTicket($('#ticket-input').value); });
+  $('#app-dialog').addEventListener('cancel', event => { if (state.dialogBusy) event.preventDefault(); else document.body.classList.remove('dialog-open'); });
+  $('#app-dialog').addEventListener('close', () => document.body.classList.remove('dialog-open'));
+  window.ArkhamUI = { state, rpc, t, node, append, action, openDialog, closeDialog, formBody, formFooter, field,
+    mutate, loadWorkspace, renderWorkspace, showToast, humanError, dateLabel, roleName, roleBadge, previewNotice,
+    navigate, openCampaign, addTranslations(en, th) { Object.assign(dictionary.en, en); Object.assign(dictionary.th, th); }, applyLanguage };
+  applyLanguage();
+  if (OFFLINE_PREVIEW) {
+    state.config = { configured: false, missingSettings: [], mode: 'offline-preview' };
+    renderAuthStatus(); enterPreview();
+  } else if (state.token) { configure(); loadWorkspace(); }
+  else {
+    configure();
+    const saved = readStorage('sessionStorage', LOGIN_KEY);
+    if (saved) { try { const pending = JSON.parse(saved); if (typeof pending.state === 'string' && typeof pending.verifier === 'string' && Number.isFinite(pending.startedAt) && Date.now() - pending.startedAt < 10 * 60 * 1000) { state.login = pending; renderAuthStatus(); pollLogin(); } else writeStorage('sessionStorage', LOGIN_KEY, null); } catch (_) { writeStorage('sessionStorage', LOGIN_KEY, null); } }
+    if (new URLSearchParams(location.search).get('preview') === '1') enterPreview();
+  }
+})();
+</script>

@@ -1,3 +1,5 @@
+> Scope update,2026-10-09: The user explicitly selected every system in the Master Brief and requested full paste-ready Apps Script code. That instruction supersedes the earlier Foundation-only development gate below. Current implementation/acceptance status is in [full-build-validation.md](full-build-validation.md) and [roadmap.md](roadmap.md). The original review is retained as architecture history; live Google acceptance remains pending.
+
 # Requirements review
 
 Reviewed: 2026-10-07. Requirements source: the user-provided Thai master brief, version 1.0. The accompanying Arkham Horror RPG Corebook is the required evidence for a separate rule-verification process. This document summarizes product requirements; it does not reproduce either attachment.

@@ -23,7 +23,7 @@ test('offline export is deterministic, self-contained, marked, and valid JavaScr
     assert.doesNotMatch(html, /<\?/);
     assert.doesNotMatch(html, /<(?:script|link|img|iframe)\b[^>]*(?:src|href)\s*=\s*["']https?:/i);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
-    assert.equal(scripts.length, 2);
+    assert.equal(scripts.length, 3);
     scripts.forEach(script => assert.doesNotThrow(() => new vm.Script(script[1])));
     const window = {};
     vm.runInNewContext(scripts[0][1], { window });

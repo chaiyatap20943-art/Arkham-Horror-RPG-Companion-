@@ -2,10 +2,12 @@
 
 Reviewed on 2026-10-07 against the user-supplied **Arkham Horror — The
 Roleplaying Game Core Rulebook**, credited © 2024 Edge Studio. These notes
-verify reference facts; **verified does not mean implemented**. The first
-milestone delivers application foundation and campaign management. It does
-not implement character creation, advancement, a dice roller, or a rules
-engine.
+verify reference facts; **verified does not mean every effect is automated**.
+Following the user's request to expand beyond the foundation, a canonical
+player-safe catalog is delivered in `src/server/catalog.js`. Application
+handlers implement their explicitly supported actions separately; reference
+verification alone does not establish those handlers' correctness or live
+Google deployment readiness.
 
 The supplied requirements document is a product brief. Its `RULE-CANDIDATE`
 entries were checked against the PDF rather than accepted as evidence by
@@ -31,11 +33,15 @@ themselves. No full-book text, PDF, or artwork is included in this repository.
 | --- | --- |
 | `VERIFIED_REFERENCE` | The fact below was checked in this exact source; it is not a claim that related software exists or all interactions are covered. |
 | `NEEDS_VERIFICATION` | Additional source review is required before this data or behavior can enter game logic. |
-| `NOT_IMPLEMENTED` | No game behavior is delivered for this topic in the foundation milestone. |
+| `CATALOG_DELIVERED` | Verified structured reference data is present in the repository; automated behavior still depends on the corresponding handler and tests. |
+| `MANUAL_GM_ADJUDICATION` | The app can retain the rule, affected state, and audited GM decision, but it must not claim to resolve the complete effect automatically. |
 
-All game topics in this register have implementation status
-`NOT_IMPLEMENTED`. Source citations must accompany future canonical rule
-data, and future game actions need their own domain and acceptance tests.
+The compiled entities use `verificationStatus: "VERIFIED"` and
+`statusSource: "VERIFIED"` to mean `VERIFIED_REFERENCE`. This does not assert
+complete effect automation. Every entity includes stable ID, source version,
+printed page, zero-based PDF index, and the source checksum. Game actions
+need their own domain and acceptance tests. Live Google integration must be
+validated independently of local catalog checks.
 
 ## Requirements candidates
 
@@ -46,9 +52,9 @@ data, and future game actions need their own domain and acceptance tests.
 | RC-03 | `VERIFIED_REFERENCE` | Start with one Tier 1 knack from the selected archetype, $50 for gear, and Insight limit 1. The free knack counts toward the Tier 1 maximum. Unspent gear funds remain cash. | 66 / 67 |
 | RC-04 | `VERIFIED_REFERENCE` | Choose exactly one additional package: $100 for gear, 5 XP, or Insight limit 2. Unspent money and XP are retained. | 66 / 67 |
 | RC-05 | `VERIFIED_REFERENCE` | Starting purchases of relics and tomes require specific GM approval. | 66 / 67 |
-| RC-06 | `VERIFIED_REFERENCE` | An archetype provides advancement limits and knack availability by tier. It does not automatically improve skills. The initial archetype cannot be discarded and replaced; later multiclassing is separate. Individual archetype catalogs still need extraction and verification. | 49 / 50; 67 / 68 |
+| RC-06 | `VERIFIED_REFERENCE` | An archetype provides advancement limits and knack availability by tier. It does not automatically improve skills. The initial archetype cannot be discarded and replaced; later multiclassing is separate. All eight individual archetype catalogs are now checked and compiled. | 49 / 50; 51–65 / 52–66; 67 / 68 |
 | RC-07 | `VERIFIED_REFERENCE` | A natural 1 fails and a natural 6 succeeds regardless of modifiers. This applies to each die, not automatically to the entire action. | 17 / 18 |
-| RC-08 | `VERIFIED_REFERENCE` for the general tables below | Skill costs, knack tier costs/counts/prerequisites, and general Insight-limit advancement conditions were verified. Individual knack effects and archetype-specific catalogs remain unverified. | 66–67 / 67–68 |
+| RC-08 | `VERIFIED_REFERENCE` | Skill costs, knack tier costs/counts/prerequisites, and general Insight-limit advancement conditions were verified. Knack names, tier availability, explicit prerequisites, and short effect summaries are now compiled; full effect automation remains handler-specific. | 66–79 / 67–80 |
 
 No direct contradiction was found in RC-01 through RC-08. The qualifications
 and exceptions below are necessary to avoid overgeneralizing their brief
@@ -67,8 +73,8 @@ wording.
 
 Source: Table 3–1, printed 67 / PDF 68. Each purchase advances one level.
 The general archetype structure allows three specified skills up to 3+ and
-one specified skill up to 2+; each actual archetype's eligible skills must be
-verified separately before implementing its validator (printed 49 / PDF 50).
+one specified skill up to 2+ (printed 49 / PDF 50). The eight individual
+archetypes' eligible skills are now verified and compiled.
 
 ### Knack purchases
 
@@ -157,18 +163,78 @@ Full multiclass validation is outside this verification scope.
   future legal purchases and trauma/Insight behavior. A complete investigator
   wizard cannot be declared rule-valid from this general summary alone.
 
-## Remaining source work
+## Delivered source data and remaining interaction work
 
-| Topic | Reference status | Work needed before implementation |
+| Topic | Reference status | Delivered evidence and remaining work |
 | --- | --- | --- |
-| Individual archetypes | `NEEDS_VERIFICATION` | Extract each eligible skill limit, knack tier, source page, and any exceptions; verify exact canonical IDs. |
-| Individual personalities | `NEEDS_VERIFICATION` | Extract positive/negative effects, Insight costs, timing, and duration; integrate with trauma resolution. The Analytical example above is verified only as an exception. |
-| Knack effects | `NEEDS_VERIFICATION` | Review costs beyond tier XP, targets, triggers, modifiers, ordering, and restrictions for every supported knack. |
-| Equipment catalog | `NEEDS_VERIFICATION` | Verify prices, quantities, weapon/protective-item statistics, purchase restrictions, item effects, and source pages. |
-| Full injury/trauma automation | `NEEDS_VERIFICATION` | Verify every table outcome, recovery condition, duration, death exception, and interaction. General table-roll formulas above do not constitute complete outcome data. |
+| Skills | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | Ten canonical skills, short summaries, and an application Thai glossary. Printed 17–19 / PDF 18–20. Thai labels are app translations, not claims of an official Thai edition. |
+| Individual archetypes | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | Eight archetypes with every eligible skill limit and tier-specific knack ID. Printed 51, 53, 55, 57, 59, 61, 63, 65 / PDF 52, 54, 56, 58, 60, 62, 64, 66. |
+| Individual personalities | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | All eleven personalities with original short positive/negative summaries, Insight costs, timing, and durations. Printed 45–48 / PDF 46–49. Unspecified half-pool rounding remains GM adjudication rather than an invented rule. |
+| Knacks | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | 117 names, source-linked short effect summaries, archetype-specific tiers, keywords where checked, and explicit base-knack prerequisites. Printed 69–79 / PDF 70–80. Generic summaries are reference material; complete effect resolution is not implied. |
+| Equipment | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | 120 entries: 30 weapon profiles, 7 protective items, 62 useful items including reloads/replenishments, 13 relics, and 8 tomes with 31 short spell summaries. Weapon references printed 82–89, protection 89–90, useful profiles 90–94 plus weapon reload pages, relics 96–100, tomes 101–105. Each entry preserves its specific citation. |
+| Injury/trauma tables | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | All eleven injury results and six trauma ranges, including pool restrictions, penalties, recovery-success counts, personality triggers, and escalation metadata. Printed 32, 39 / PDF 33, 40. Complete ability interactions, optional death avoidance, and GM-specific outcomes require explicit handler support. |
+| Baseline rules search | `VERIFIED_REFERENCE`, `CATALOG_DELIVERED` | Fourteen brief rule entries cover pools, actions, advantage, damage, horror, trauma, Insight, creation, and advancement. They are original summaries with citations rather than a full rulebook export. |
+| Cross-ability interactions | `NEEDS_VERIFICATION` where not explicitly covered | Confirm precedence, targets, modifiers, consumed resources, and durations before adding automatic behavior. Otherwise retain the source-linked rule and require an audited GM decision. |
 | House rules | `NEEDS_VERIFICATION` | Record only user/GM-authorized changes, label them as house rules, and version them separately from this source. |
 
-Future rule development should use small verified modules with server-side
-validation and source-linked acceptance tests. Until those modules are
-delivered, the campaign foundation must not advertise official automated
-character calculations or a completed rules engine.
+Equipment `price` uses 1927 USD; `priceCents` preserves exact integer amounts
+for budgeting. Unknown exact prices stay `null`, with official ranges stored
+separately where present. An unpriced relic or tome is not a free purchase.
+Relics and tomes retain explicit GM-approval flags; non-purchasable items are
+marked as such. Split purchasable variants have distinct stable IDs. The
+ordinary `gold-pocket-watch` and supernatural `the-gold-pocket-watch` are
+separate entities.
+
+`tests/catalog.test.cjs` checks source identity, page-index mapping, canonical
+reference integrity, per-archetype tiers, creation/advancement constraints,
+important personality exceptions, price precision, complete outcome ranges,
+and immutable authoritative data. These checks validate catalog integrity;
+they do not constitute live Google verification or exhaustive rules-engine
+acceptance tests.
+
+## Campaign-scoped source registration
+
+`Arkham.seedCatalogForCampaign(state, campaign, at)` registers the compiled
+reference facts inside the caller's campaign-creation or installation
+transaction. The private source-book metadata uses stable ID
+`<CampaignID>:corebook`. Each of the 297 player-safe catalog entities uses
+`<CampaignID>:catalog:<CanonicalEntityID>`, retaining `canonicalCatalogId`
+and `entityId` for lookup and duplicate suppression in rule search.
+
+The book stores source title, edition, and checksum once, with Co-GM/GM
+metadata visibility and no attached PDF or Drive file. Entity rows contain
+the campaign ID, short English description, source page/index, verified
+reference status, and structured canonical properties. Their visibility is
+`CAMPAIGN_PLAYERS`; permissions still require active campaign membership.
+Stored source references point to that campaign's source book rather than
+duplicating full provenance metadata in every entity.
+
+Registration is additive and idempotent: existing books, edited canonical
+rows, custom entities, timestamps, and versions are retained. Calling it for
+another campaign creates separate IDs and does not change the first
+campaign. The corresponding catalog tests exercise these preservation and
+isolation guarantees.
+
+These persistent rows are reference/import records. They do not replace
+the frozen `Arkham.catalog` used by rule calculations. Importing JSON,
+editing a glossary, or marking an imported source as reviewed cannot grant
+new authority to engine costs or rules. Complete effects still require
+explicit implementation and validation.
+
+## GM reference catalog — checked 2026-10-09
+
+`src/server/gm-catalog.js` adds169 separately protected records:16 NPCs,
+19 creatures,15 Ancient Ones and119 locations. Thirty-five profiles retain
+the ten exact skill thresholds (a printed dash remains unavailable), with
+dice-pool maxima checked visually against the PDF icons. Thirty-eight attack
+profiles retain source-linked numeric facts and short original summaries.
+Ancient Ones have reference information without invented combat statistics.
+
+GM references use `CO_GM` visibility, frozen facts and the same source
+checksum/page mapping. They are seeded idempotently under scoped
+`<CampaignID>:catalog:gm:<EntityID>` IDs. Search/translation/AI resolve their
+current permission from the frozen source even if a persisted row is edited;
+players never receive the GM catalog in their bootstrap payload.
+Abilities are `REFERENCE_ONLY` and require GM adjudication rather than
+unverified automatic combat resolution. Dedicated source, immutability,
+registration and library-permission tests cover these boundaries.

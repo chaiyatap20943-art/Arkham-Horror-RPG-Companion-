@@ -4,7 +4,12 @@ var Arkham = typeof Arkham === 'undefined' ? {} : Arkham;
   'use strict';
   A.tables = {
     users: 'Users', campaigns: 'Campaigns', members: 'CampaignMembers',
-    invites: 'CampaignInvites', mutations: 'MutationRequests', audit: 'AuditLog'
+    invites: 'CampaignInvites', mutations: 'MutationRequests', audit: 'AuditLog',
+    characters: 'Characters', sessions: 'Sessions', attendance: 'SessionPlayers',
+    snapshots: 'SessionSnapshots', scenes: 'Scenes', assets: 'StoryAssets',
+    events: 'JournalEvents', rolls: 'DiceRolls', xpLedger: 'XPLedger',
+    books: 'Books', entities: 'GameEntities', translations: 'Translations',
+    materials: 'Materials', aiHistory: 'AIHistory', backups: 'Backups', imports: 'ImportCheckpoints'
   };
   A.emptyState = function () {
     var state = {};

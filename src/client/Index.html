@@ -58,16 +58,17 @@
           <g fill="#b3a071" font-family="Georgia,serif" font-size="11" letter-spacing="5" opacity=".65"><text x="300" y="140" text-anchor="middle">THE UNKNOWN AWAITS</text><text x="300" y="470" text-anchor="middle">ARKHAM · MASSACHUSETTS</text></g>
         </svg>
         <div class="art-bottom"><span class="art-line"></span><p data-i18n="artQuote">Some doors are better<br>opened together.</p><span class="art-line"></span></div>
-        <div class="art-footnote"><span data-i18n="foundationEdition">FOUNDATION EDITION</span><span>01 / 05</span></div>
+        <div class="art-footnote"><span data-i18n="foundationEdition">CAMPAIGN EDITION</span><span>01 / 05</span></div>
       </section>
     </div>
-    <footer class="landing-footer"><span data-i18n="independentNotice">An independent companion for Arkham Horror: The Roleplaying Game.</span><span data-i18n="noBookContent">Private by design. No rulebook content distributed.</span></footer>
+    <footer class="landing-footer"><span data-i18n="independentNotice">An independent companion for Arkham Horror: The Roleplaying Game.</span><span data-i18n="noBookContent">Private sources. Rules with citations.</span></footer>
   </main>
 
   <div id="workspace" class="workspace" hidden>
     <div id="preview-banner" class="preview-banner" hidden><span><span class="status-dot"></span><span data-i18n="previewBanner">Design preview · sample data · read only</span></span><button id="exit-preview" type="button" data-i18n="backToSignIn">Back to sign-in →</button></div>
     <aside id="sidebar" class="sidebar">
       <a class="brand sidebar-brand" href="#" aria-label="Arkham Campaign Companion home"><span class="brand-mark" aria-hidden="true">A</span><span class="brand-name">ARKHAM<span data-i18n="brandSubtitle">CAMPAIGN COMPANION</span></span></a>
+      <div class="sidebar-scroll">
       <div class="sidebar-rule"></div>
       <p class="nav-label" data-i18n="yourWorkspace">YOUR WORKSPACE</p>
       <nav class="main-navigation" aria-label="Main navigation">
@@ -76,19 +77,27 @@
       </nav>
       <div class="sidebar-rule"></div>
       <p class="nav-label" data-i18n="nextChapters">THE NEXT CHAPTERS</p>
-      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">♧</span><span data-i18n="investigators">Investigators</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
-      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">◷</span><span data-i18n="sessions">Sessions</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
-      <div class="upcoming-nav"><span><span class="nav-icon" aria-hidden="true">▤</span><span data-i18n="campaignJournal">Campaign journal</span></span><span class="soon-label" data-i18n="soon">SOON</span></div>
+      <nav class="feature-navigation" aria-label="Campaign tools">
+        <button type="button" data-feature-view="investigators" class="nav-item"><span class="nav-icon" aria-hidden="true">♧</span><span data-i18n="investigators">Investigators</span></button>
+        <button type="button" data-feature-view="sessions" class="nav-item"><span class="nav-icon" aria-hidden="true">◷</span><span data-i18n="sessions">Sessions</span></button>
+        <button type="button" data-feature-view="story" class="nav-item"><span class="nav-icon" aria-hidden="true">▤</span><span data-i18n="campaignJournal">Story &amp; journal</span></button>
+        <button type="button" data-feature-view="rulebook" class="nav-item"><span class="nav-icon" aria-hidden="true">◇</span><span data-i18n="rulebook">Rulebook</span></button>
+        <button type="button" data-feature-view="assistant" class="nav-item"><span class="nav-icon" aria-hidden="true">✦</span><span data-i18n="assistant">AI assistant</span></button>
+        <button type="button" data-feature-view="materials" class="nav-item"><span class="nav-icon" aria-hidden="true">⌖</span><span data-i18n="materials">Scanner &amp; sources</span></button>
+        <button type="button" data-feature-view="tools" class="nav-item"><span class="nav-icon" aria-hidden="true">⇅</span><span data-i18n="tools">Export &amp; restore</span></button>
+      </nav>
+      </div>
       <div class="sidebar-bottom"><div class="edition-card"><span class="edition-symbol" aria-hidden="true">✦</span><span data-i18n="editionCard">A place to gather.<br>A story to remember.</span></div><div class="profile"><div class="avatar" id="profile-avatar">A</div><div class="profile-text"><strong id="profile-name">Investigator</strong><span id="profile-label" data-i18n="googleAccount">Google account</span></div><button id="sign-out" class="icon-button" type="button" aria-label="Sign out" title="Sign out">→</button></div></div>
     </aside>
     <div class="main-column">
       <header class="workspace-header"><div class="breadcrumb"><span data-i18n="workspaceLabel">WORKSPACE</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">My campaigns</strong></div><div class="header-actions"><span class="header-private"><span class="status-dot" aria-hidden="true"></span><span data-i18n="privateWorkspace">Private workspace</span></span><button type="button" class="language-button" data-language-toggle aria-label="Switch language">EN <span>/</span> ไทย</button><button id="mobile-sign-out" class="icon-button mobile-sign-out" type="button" aria-label="Sign out" title="Sign out">→</button></div></header>
       <main id="app-content" class="app-content" tabindex="-1"></main>
-      <footer class="workspace-footer"><span>ARKHAM HORROR RPG <span class="footer-divider">/</span> <span data-i18n="foundationEdition">FOUNDATION EDITION</span></span><span data-i18n="workspaceFooter">Every campaign is a world of its own.</span><span class="footer-star" aria-hidden="true">✦</span></footer>
+      <footer class="workspace-footer"><span>ARKHAM HORROR RPG <span class="footer-divider">/</span> <span data-i18n="foundationEdition">CAMPAIGN EDITION</span></span><span data-i18n="workspaceFooter">Every campaign is a world of its own.</span><span class="footer-star" aria-hidden="true">✦</span></footer>
     </div>
   </div>
 
   <dialog id="app-dialog" class="app-dialog" aria-labelledby="dialog-title"><div id="dialog-content"></div></dialog>
   <?!= include_('Client'); ?>
+  <?!= include_('Features'); ?>
 </body>
 </html>

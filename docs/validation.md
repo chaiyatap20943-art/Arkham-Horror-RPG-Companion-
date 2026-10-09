@@ -1,3 +1,5 @@
+> Historical Foundation validation. For the expanded full-code build, use [full-build-validation.md](full-build-validation.md). The results below record the earlier milestone.
+
 # Validation record — 2026-10-07
 
 Current delivery: Foundation implementation and preparatory campaign permission workflows. The full MVP and the Google deployment gates remain incomplete.
